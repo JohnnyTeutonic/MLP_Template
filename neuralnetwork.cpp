@@ -12,9 +12,9 @@
 #include <cstdlib>
 using namespace std;
 
-
+using Vec = vector<float>;
 template <typename It>
-void softmaxTemplate(It beg, It end)
+void softmax(It beg, It end)
 {
 	using VType = typename std::iterator_traits<It>::value_type;
 
@@ -23,23 +23,15 @@ void softmaxTemplate(It beg, It end)
 
 	auto max_ele{ *std::max_element(beg, end) };
 
-	transform(
-		beg,
-		end,
-		beg,
-		[&](VType x) { return exp(x - max_ele); });
+	transform(beg, end, beg, [&](VType x) { return exp(x - max_ele); });
 
 	VType exptot = std::accumulate(beg, end, 0.0);
 
-	transform(
-		beg,
-		end,
-		beg,
-		[&](VType x) { auto ex = exp(x - max_ele); exptot += ex; return ex; });
+	transform(beg,end, beg, [&](VType x) { auto ex = exp(x - max_ele); exptot += ex; return ex; });
 }
 
 struct Node {
-	Node()=default;
+	Node() = default;
 	Node(int size) : weights(size) { sz = size; };
 	Node(const Node& copynode) : weights(copynode.weights) { sz = copynode.sz; };
 	int sz;
@@ -65,6 +57,11 @@ struct inputNode {
 	}
 };
 
+struct container {
+	container(Vec t, Vec u, Vec v, Vec w, Vec x, Vec z) : W1(t), W2(u), A1(v), A2(w), Z1(x), Z2(z) {};
+	Vec W1, W2;
+	Vec A1, A2, Z1, Z2;
+};
 
 template <typename T>
 bool IsInBounds(const T& value, const T& low, const T& high) {
@@ -74,8 +71,10 @@ bool IsInBounds(const T& value, const T& low, const T& high) {
 
 class MLPClassifier {
 public:
-	explicit MLPClassifier(int n_hidden_nodes, float lr, int lz, int ilz, int nc, int n_iter) : hidden_node_size(n_hidden_nodes) {learning_rate_sanity_check(lr) ? learning_rate = lr : learning_rate = 0.1f;
-	hidden_layer_size = lz; input_layer_size = ilz; weight_size = ilz + 1; n_classes = nc; weight_size_final = n_hidden_nodes + 1; no_iterations = n_iter;
+	explicit MLPClassifier(int n_hidden_nodes, float lr, int lz, int ilz, int nc, int n_iter, int n_hl) : hidden_node_size(n_hidden_nodes) {
+		learning_rate_sanity_check(lr) ? learning_rate = lr : learning_rate = 0.1f;
+		hidden_layer_size = lz; input_layer_size = ilz; weight_size = ilz + 1; n_classes = nc; weight_size_final = n_hidden_nodes + 1; no_iterations = n_iter;
+		no_hidden_layers = n_hl;
 	};
 	~MLPClassifier() {};
 	using Vec = vector<float>;
@@ -88,11 +87,12 @@ public:
 	int weight_size;
 	int hidden_node_size;
 	int no_iterations;
+	int no_hidden_layers;
 	bool learning_rate_sanity_check(float range) {
 		if (IsInBounds(range, 0.0f, 1.0f)) {
 			return true;
 		};
-		return false;	
+		return false;
 	}
 	vector<inputNode> initial_nodes;
 	vector<Node> hidden_nodes;
@@ -118,7 +118,7 @@ public:
 	void populate_final_nodes() {
 		auto n_nodes = this->n_classes;
 		for (auto i = 0; i < n_nodes; i++) {
-			Node mynode{this->weight_size_final};
+			Node mynode{ this->weight_size_final };
 			generate_weights(mynode);
 			final_nodes.push_back(mynode);
 		}
@@ -143,41 +143,48 @@ public:
 		return inner_product(std::begin(prev[index].weights), std::end(prev[index].weights), std::begin(next[index].weights), 0.0);
 	}
 
-	struct container {
-		container(vector<Vec> t, vector<Vec> u, Vec v, Vec w, Vec x, Vec z) : W1(t), W2(u), A1(v), A2(w), Z1(x), Z2(z) {};
-		vector<Vec> W1, W2;
-		Vec A1, A2, Z1, Z2;
-	};
+	Vec matmul(const vector<Node>& W, const Vec& x, const Vec& b) {
+		Vec z(W.size(), 0.0);
+		for (unsigned int i = 0; i < W.size(); ++i) {
+			for (unsigned int j = 0; j < W[0].weights.size(); ++j) {
+				z[i] += W[i].weights[j] * x[j];
+			}
+			z[i] += b[i];
+		}
+		return z;
+	}
+
 
 	container forward_propagation(Vec training_data) {
 		if (training_data.size() != this->input_layer_size) {
-			training_data.emplace_back(0); // fit training data with bias term
-		}
-		
-		Vec Z1;
-		vector<Vec> W1;
-		for (auto i=0; i < this->hidden_node_size; i++){
-			W1.emplace_back(this->hidden_nodes[i].weights);
-			Z1.emplace_back(static_cast<float>(inner_product(training_data.begin(), training_data.end(), std::begin(this->hidden_nodes[i].weights), 0.0)));
+			training_data.emplace_back(0.0f); // fit training data with bias term
 		}
 
-		//for_each(firstweights.begin(), firstweights.end(), bind(&MLPClassifier::relu));
+		Vec Z1;
+		Vec W1;
+		for (auto i = 0; i < this->hidden_nodes.size(); i++) {
+			for (auto j = 0; j < this->hidden_nodes[0].sz; j++) {
+				W1.emplace_back(this->hidden_nodes[i].weights[j]);
+				Z1.emplace_back(static_cast<float>(inner_product(training_data.begin(), training_data.end(), std::begin(this->hidden_nodes[i].weights), 0.0)));
+			}
+		}
+
 		auto A1 = this->relu_it(Z1);
 		Vec Z2;
-		vector<Vec> W2;
+		Vec W2;
 		for (auto i = 0; i < this->final_nodes.size(); i++) {
-			W2.emplace_back(this->final_nodes[i].weights);
-			Z2.emplace_back(static_cast<float>(inner_product(A1.begin(), A1.end(), std::begin(this->final_nodes[i].weights), 0.0)));
+			for (auto j = 0; j < this->final_nodes[0].sz; j++) {
+				W2.emplace_back(this->final_nodes[i].weights[j]);
+				Z2.emplace_back(static_cast<float>(inner_product(A1.begin(), A1.end(), std::begin(this->final_nodes[i].weights), 0.0)));
+			}
 		}
-
 		Vec A2 = this->softmaxoverflow(Z2);
-
 		container cnt{ W1, W2, A1, A2, Z1, Z2 };
 		return cnt;
 	}
 
 	Vec relu_it(Vec val) {
-		auto size_vec = val.size();		
+		auto size_vec = val.size();
 		Vec res;
 		for (auto i = 0; i < size_vec; i++) {
 			res.emplace_back(val[i] < 0.0f ? 0.0f : val[i]);
@@ -185,6 +192,15 @@ public:
 		return res;
 	}
 
+	Vec convert_probs_to_class(Vec probs) {
+		Vec::iterator result = std::max_element(probs.begin(), probs.end());
+		int argmaxVal = distance(probs.begin(), result);
+		int selected_class = probs[argmaxVal];
+		Vec one_hot_classes(probs.size());
+		fill(one_hot_classes.begin(), one_hot_classes.end(), 0.0f);
+		one_hot_classes[selected_class] = 1;
+		return one_hot_classes;
+	}
 
 	float relu(float val) {
 		return val < 0.0f ? 0.0f : val;
@@ -197,7 +213,7 @@ public:
 
 	auto loss_function_cross_entropy(Vec p, Vec q) { // p is ground truth, q is softmax/sigmoid predictions from forward prop
 		Vec loss_vec;
-		transform(p.begin(), p.end(), q.begin(), back_inserter(loss_vec), [&](float x, float y) {return x * log(y); });
+		transform(p.begin(), p.end(), q.begin(), back_inserter(loss_vec), [&](float x, float y) {return x * log(y) + float(1e-8); });
 		auto loss = accumulate(loss_vec.begin(), loss_vec.end(), 0.0);
 		return -loss;
 	}
@@ -222,7 +238,7 @@ public:
 			sum.emplace_back(exp(weights[i] - max));
 		}
 
-		auto norm2 = accumulate(sum.begin(), sum.end(), 0.0);
+		float norm2 = accumulate(sum.begin(), sum.end(), 0.0);
 
 		for (auto i = 0; i < weights.size(); i++) {
 			secondweights.emplace_back(exp(weights[i] - max) / norm2);
@@ -234,7 +250,7 @@ public:
 		Vec derivativeWeights;
 		Vec act = softmaxoverflow(weights);
 		for (int i = 0; i < act.size(); i++) {
-			derivativeWeights.emplace_back(act[i] * (1. - act[i]));
+			derivativeWeights.emplace_back(act[i] * (1.f - act[i]));
 		}
 		return derivativeWeights;
 	}
@@ -243,65 +259,80 @@ public:
 		Vec A = this->relu_it(Z);
 		Vec B = this->setToZero(A);
 		Vec dZ;
-		transform(dA.begin(), dA.end(), B.begin(), std::back_inserter(dZ), std::multiplies<>{});
+		transform(dA.begin(), dA.end(), A.begin(), std::back_inserter(dZ), std::multiplies<>{});
 		return dZ;
 	}
-
-	pair<float, float> linear_backwards(Vec dZ, vector<Vec> W_curr, Vec weights_prev) {
-		auto m = weights_prev.size();
-		float dW = (1 / m) * inner_product(dZ.begin(), dZ.end(), activations_prev.begin(), 0.0);
-		float dA_prev = inner_product(W_curr.begin(), W_curr.end(), dZ.begin(), 0.0);
-		return make_pair(dA_prev, dW);
-	}
-
-	pair<float, float> linear_activation_backwards(Vec dA, vector<Vec> W_curr, Vec Z_curr, Vec A_prev, string activation_function="relu") {
-		float da_prev, dW;
-		if (activation_function == "relu") {
-			auto dZ = this->relu_gradient(dA, Z_curr);
-			tie(da_prev, dW) = linear_backwards(dZ, A_prev, W_curr);
-		}
-		else {
-			auto dZ = this->softmaxDerivative(activation_weights);
-			tie(da_prev, dW) = linear_backwards(dZ, A_prev, W_curr);
-		}
-		return make_pair(da_prev, dW);
-	}
-
-	Vec backwards_propagation(Vec actual, vector<float> training_data) {
-		//tuple<Vec,Vec,vector<Vec>, Vec, Vec, vector<Vec>> res = this->forward_propagation(training_data);
-		Vec grads;
-		container ctr{ this->forward_propagation(training_data) };
-		//Vec AL = get<0>(res);
-		Vec preds = ctr.Z2;
-		Vec result1;
-		transform(std::begin(preds), std::begin(preds) + preds.size(), std::begin(actual),
-			std::back_inserter(result1), [](float x, float y) {return x - y; });
-		Vec result2;
-		float myconstant{1};
-		transform(preds.begin(), preds.end(), std::back_inserter(result2), [&myconstant](auto& c) {return (c)*(myconstant - c); });
-		Vec dAL;
-		transform(result1.begin(), result1.begin() + result1.size(), result2.begin(),
-			std::back_inserter(dAL), std::divides<>{});
-		float dA_prev_1, dW_prev_1;
-		tie(dA_prev_1, dW_prev_1) = linear_activation_backwards(dAL, ctr.W2, ctr.A1, ctr.Z1, "softmax");
-
-
-		//transform(v.begin(), v.end(), v.begin(), [k](int &c) { return c / k; });
-		
-
-		return AL;
-	}
-
 
 	Vec setToZero(Vec &a) {
 		Vec b;
 		for (auto i = a.begin(); i != a.end(); i++) {
 			if (*i < 0.0f) {
-				b.emplace_back(0);
+				b.emplace_back(0.0f);
 			}
 			else { b.emplace_back(*i); }
 		}
 		return b;
+	}
+
+	pair<float, float> linear_backwards(Vec dZ, Vec W_curr, Vec weights_prev) {
+		auto m = weights_prev.size();
+		float dW = (1 / m) * inner_product(dZ.begin(), dZ.end(), weights_prev.begin(), 0.0);
+		float(dA_prev) = inner_product(W_curr.begin(), W_curr.end(), dZ.begin(), 0.0);
+		return make_pair(dA_prev, dW);
+	}
+
+	pair<float, float> linear_activation_backwards(Vec dA, Vec W_curr, Vec Z_curr, Vec A_prev, string activation_function = "relu") {
+		float da_prev, dW;
+		if (activation_function == "relu") {
+			auto dZ = this->relu_gradient(dA, Z_curr);
+			tie(da_prev, dW) = linear_backwards(dZ, W_curr, A_prev);
+		}
+		if (activation_function == "softmax") {
+			auto dZ = this->softmaxDerivative(Z_curr);
+			tie(da_prev, dW) = linear_backwards(dZ, W_curr, A_prev);
+		}
+		else { throw exception("only multi-class classification is supported at the moment."); }
+		return make_pair(da_prev, dW);
+	}
+
+	Vec backwards_propagation(Vec actual, Vec training_data) {
+		Vec grads;
+		container ctr{ this->forward_propagation(training_data) };
+		Vec y_hat = this->convert_probs_to_class(ctr.A2);
+		Vec result1;
+		transform(std::begin(y_hat), std::begin(y_hat) + y_hat.size(), std::begin(actual),
+			std::back_inserter(result1), [](float x, float y) {return x - y; });
+		Vec result2;
+		float myconstant{ 1 };
+		transform(y_hat.begin(), y_hat.end(), std::back_inserter(result2), [&myconstant](auto& c) {return (c)*(myconstant - c); });
+		Vec dA_prev;
+		transform(result1.begin(), result1.begin() + result1.size(), result2.begin(),
+			std::back_inserter(dA_prev), std::divides<>{});
+		for (auto i = 0; i < 2; i++) {
+			auto dA_curr = dA_prev;
+			float dA_prev, dW_prev;
+			if (i==0){
+				tie(dA_prev, dW_prev) = this->linear_activation_backwards(dA_curr, ctr.W2, ctr.Z2, ctr.A2, "softmax");}
+			else {
+				tie(dA_prev, dW_prev) = this->linear_activation_backwards(dA_curr, ctr.W1, ctr.Z1, ctr.A1, "relu");
+			}
+			grads.push_back(dW_prev);
+		}
+
+		//transform(v.begin(), v.end(), v.begin(), [k](int &c) { return c / k; });
+		return grads;
+	}
+
+
+	void update_parameters(Vec & grads, float learning_rate, vector<Node> & hidden_nodes) {
+		int grads_size = grads.size();
+		vector<Node> update_nodes;
+		for (int i = 0; i < grads_size; i++) {
+			for (int j = 0; j < hidden_nodes[0].weights.size(); j++) {
+				//std::transform(hidden_nodes[i].weights.begin(), hidden_nodes[i].weights.end(), update_nodes[i].weights.begin(), [learning_rate, grads, i] { learning_rate - grads[i]; });
+				this->hidden_nodes[0].weights[j] = this->hidden_nodes[0].weights[j] - this->learning_rate*grads[i];
+			}
+		}
 	}
 
 };
@@ -309,19 +340,32 @@ public:
 
 int main() {
 
-	MLPClassifier mynet(10, 0.3f, 10, 20, 3, 50);
+	MLPClassifier mynet(10, 0.3f, 10, 20, 3, 50, 1);
 	cout << "input layer size is " << mynet.input_layer_size << endl;
 	cout << "my weights is " << mynet.weight_size << endl;
 	cout << "final layer weights is " << mynet.weight_size_final << endl;
 	cout << "learning rate is " << mynet.learning_rate << endl;
-	vector<float> random_sample(mynet.input_layer_size);
-	random_sample.emplace_back(0);
-	generate(random_sample.begin(), random_sample.end(), [&]() {return static_cast <float> (rand() % 5);});
+	mynet.initialise_parameters();
+	Vec classes = { 0.0f,1.0f,0.0f };
+	Vec random_sample(mynet.input_layer_size);
+	random_sample.emplace_back(0.0f);
+	generate(random_sample.begin(), random_sample.end(), [&]() {return static_cast <float> (rand() % 5); });
+	Vec probs = { 0.3f, 0.2f, 0.5f };
+
+	container ctr{ mynet.forward_propagation(random_sample) };
+	Vec y_hat = mynet.convert_probs_to_class(ctr.A2);
+	for (auto& u: y_hat) {
+		cout << "preds" << u << endl;
+	}
+	//Vec grads = mynet.backwards_propagation(classes, random_sample);
+	//for (auto &u : grads) {
+	//	cout << "grads" << endl;
+	//}
+	/*
 	for (auto &u : random_sample) {
 		cout << "random " << u << endl;
 	}
 
-	mynet.initialise_parameters();
 	vector<float> f = mynet.hidden_nodes[2].weights;
 	for (auto &x : f) {
 		cout << "weights " << x << endl;
@@ -350,8 +394,8 @@ int main() {
 	}
 
 	std::vector<float> myarray;
-	float myconstant{1};
-	std::transform(a.begin(), a.end(), std::back_inserter(myarray), [&myconstant](auto& c) {return (c)*(myconstant-c); });
+	float myconstant{ 1 };
+	std::transform(a.begin(), a.end(), std::back_inserter(myarray), [&myconstant](auto& c) {return (c)*(myconstant - c); });
 	for (auto &u : myarray) {
 		cout << "multiply by 1 times itself " << u << endl;
 	}
@@ -367,8 +411,8 @@ int main() {
 
 	auto m = mynet.hidden_nodes.size();
 	cout << "m" << m << endl;
-	auto dW = (1/m)*inner_product(A.begin(), A.end(), B.begin(), 0.0);
-	cout << "dW " << dW << endl;
+	auto dW = (1 / m)*inner_product(A.begin(), A.end(), B.begin(), 0.0);
+	cout << "dW " << dW << endl;*/
 
 
 	//softmax(firstweights.begin(), firstweights.end());
@@ -386,7 +430,7 @@ int main() {
 
 	//for_each(output.begin(), output.end(), [&](float x) { dvd(x); });
 
-	
+
 	//auto dotprod = mynet.linear_forward<Node>(mynet.hidden_nodes, mynet.final_nodes);
 	/*for (auto &u : random_sample) {
 		cout << "random " << u << endl;
