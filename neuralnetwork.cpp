@@ -243,7 +243,7 @@ public:
 		Vec A = this->relu_it(Z);
 		Vec B = this->setToZero(A);
 		Vec dZ;
-		transform(dA.begin(), dA.end(), A.begin(), std::back_inserter(dZ), std::multiplies<>{});
+		transform(dA.begin(), dA.end(), B.begin(), std::back_inserter(dZ), std::multiplies<>{});
 		return dZ;
 	}
 
