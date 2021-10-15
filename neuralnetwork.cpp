@@ -203,7 +203,7 @@ public:
 		int selected_class = probs[argmaxVal];
 		Vec one_hot_classes(probs.size());
 		fill(one_hot_classes.begin(), one_hot_classes.end(), 0.0f);
-		one_hot_classes[selected_class] = 1;
+		one_hot_classes[selected_class] = 1.0f;
 		return one_hot_classes;
 	}
 
@@ -375,8 +375,7 @@ int main() {
 	cout << "final layer weights is " << mynet.weight_size_final << endl;
 	cout << "learning rate is " << mynet.learning_rate << endl;
 	mynet.initialise_parameters();
-	Vec classes = { 0.0f, 1.0f, 0.0f };
-	Vec preds = { 0.0f, 1.0f, 0.0f};
+	Vec classes = { 0.0f, 1.0f, 0.0f }; // one-hot encoded - using floats for now but will change to ints in future implementation
 	Vec random_sample(mynet.input_layer_size);
 	random_sample.emplace_back(0.0f);
 	generate(random_sample.begin(), random_sample.end(), [&]() {return static_cast <float> (rand() % 5); });
@@ -389,7 +388,7 @@ int main() {
 		cout << "preds " << u << endl;
 	}
 	getchar();
-	/*Vec grads = mynet.backwards_propagation(classes, random_sample);
+	/*Vec grads = mynet.backwards_propagation(classes, y_hat, random_sample, ctr);
 	for (auto &u : grads) {
 		cout << "grads" << endl;
 	}
