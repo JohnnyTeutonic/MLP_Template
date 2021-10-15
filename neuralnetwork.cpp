@@ -17,16 +17,16 @@ using Vec = vector<float>;
 template <typename It>
 void softmax(It beg, It end)
 {
-	using VType = typename std::iterator_traits<It>::value_type;
+	using VType = typename iterator_traits<It>::value_type;
 
-	static_assert(std::is_floating_point<VType>::value,
+	static_assert(is_floating_point<VType>::value,
 		"Softmax function only applicable for floating types");
 
-	auto max_ele{ *std::max_element(beg, end) };
+	auto max_ele{ *max_element(beg, end) };
 
 	transform(beg, end, beg, [&](VType x) { return exp(x - max_ele); });
 
-	VType exptot = std::accumulate(beg, end, 0.0);
+	VType exptot = accumulate(beg, end, 0.0);
 
 	transform(beg,end, beg, [&](VType x) { auto ex = exp(x - max_ele); exptot += ex; return ex; });
 }
@@ -141,7 +141,7 @@ public:
 
 	template<typename T>
 	auto linear_forward(vector<T> prev, vector<T> next, int index) {
-		return inner_product(std::begin(prev[index].weights), std::end(prev[index].weights), std::begin(next[index].weights), 0.0);
+		return inner_product(begin(prev[index].weights), end(prev[index].weights), begin(next[index].weights), 0.0);
 	}
 
 	Vec matmul(const vector<Node>& W, const Vec& x, const Vec& b) {
@@ -159,7 +159,7 @@ public:
 	{
 		float result = 0;
 		for (auto& v : e)
-			result += std::inner_product(v.weights.begin(), v.weights.end(), p.begin(), 0.0);
+			result += inner_product(v.weights.begin(), v.weights.end(), p.begin(), 0.0);
 		return result;
 	}
 
@@ -169,7 +169,7 @@ public:
 
 		for (auto i = 0; i < this->hidden_nodes.size(); i++) {
 			//Z1.emplace_back(double_dot_product(this->hidden_nodes, training_data));
-			Z1.emplace_back(static_cast<float>(inner_product(training_data.begin(), training_data.end(), std::begin(this->hidden_nodes[i].weights), 0.0)));
+			Z1.emplace_back(static_cast<float>(inner_product(training_data.begin(), training_data.end(), begin(this->hidden_nodes[i].weights), 0.0)));
 			for (auto j = 0; j < this->hidden_nodes[0].sz; j++) {
 				W1.emplace_back(this->hidden_nodes[i].weights[j]);
 			}
@@ -177,7 +177,7 @@ public:
 
 		auto A1 = this->relu_it(Z1);
 		for (auto i = 0; i < this->final_nodes.size(); i++) {
-			Z2.emplace_back(static_cast<float>(inner_product(A1.begin(), A1.end(), std::begin(this->final_nodes[i].weights), 0.0)));
+			Z2.emplace_back(static_cast<float>(inner_product(A1.begin(), A1.end(), begin(this->final_nodes[i].weights), 0.0)));
 			for (auto j = 0; j < this->final_nodes[0].sz; j++) {
 				W2.emplace_back(this->final_nodes[i].weights[j]);
 			}
@@ -199,7 +199,7 @@ public:
 	}
 
 	Vec convert_probs_to_class(Vec& probs) {
-		Vec::iterator result = std::max_element(probs.begin(), probs.end());
+		Vec::iterator result = max_element(probs.begin(), probs.end());
 		int argmaxVal = distance(probs.begin(), result);
 		int selected_class = probs[argmaxVal];
 		Vec one_hot_classes(probs.size());
@@ -238,7 +238,7 @@ public:
 	Vec softmaxoverflow(Vec& weights) {
 		Vec secondweights;
 		Vec sum;
-		float max = *std::max_element(weights.begin(), weights.end());
+		float max = *max_element(weights.begin(), weights.end());
 
 		for (auto i = 0; i < weights.size(); i++) {
 			sum.emplace_back(exp(weights[i] - max));
@@ -265,7 +265,7 @@ public:
 		Vec A = this->relu_it(Z);
 		Vec B = this->setToZero(A);
 		Vec dZ;
-		transform(dA.begin(), dA.end(), A.begin(), std::back_inserter(dZ), std::multiplies<>{});
+		transform(dA.begin(), dA.end(), A.begin(), back_inserter(dZ), multiplies<>{});
 		return dZ;
 	}
 
@@ -305,11 +305,11 @@ public:
 	Vec backwards_propagation(Vec& Y_hat, Vec& actual, Vec& training_data, container& ctr) {
 		Vec grads, result1, result2, dA_prev;
 		float myconstant{1};
-		transform(std::begin(Y_hat), std::begin(Y_hat) + Y_hat.size(), std::begin(actual),
-			std::back_inserter(result1), [](float x, float y) {return x - y; });
-		transform(Y_hat.begin(), Y_hat.end(), std::back_inserter(result2), [&myconstant](auto& c) {return (c)*(myconstant - c); });
+		transform(begin(Y_hat), begin(Y_hat) + Y_hat.size(), begin(actual),
+			back_inserter(result1), [](float x, float y) {return x - y; });
+		transform(Y_hat.begin(), Y_hat.end(), back_inserter(result2), [&myconstant](auto& c) {return (c)*(myconstant - c); });
 		transform(result1.begin(), result1.begin() + result1.size(), result2.begin(),
-			std::back_inserter(dA_prev), std::divides<>{});
+			back_inserter(dA_prev), divides<>{});
 		for (auto i = 0; i < 2; i++) { // this implementation only has a single hidden layer for now
 			auto dA_curr = dA_prev;
 			float dA_prev, dW_prev;
@@ -344,7 +344,7 @@ public:
 		vector<Node> update_nodes;
 		for (int i = 0; i < grads_size; i++) {
 			for (int j = 0; j < hidden_nodes[0].weights.size(); j++) {
-				//std::transform(hidden_nodes[i].weights.begin(), hidden_nodes[i].weights.end(), update_nodes[i].weights.begin(), [learning_rate, grads, i] { learning_rate - grads[i]; });
+				//transform(hidden_nodes[i].weights.begin(), hidden_nodes[i].weights.end(), update_nodes[i].weights.begin(), [learning_rate, grads, i] { learning_rate - grads[i]; });
 				this->hidden_nodes[i].weights[j] = this->hidden_nodes[i].weights[j] - this->learning_rate*grads[i];
 			}
 		}
