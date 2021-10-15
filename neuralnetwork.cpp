@@ -72,23 +72,21 @@ bool constexpr IsInBounds(const T& value, const T& low, const T& high) {
 
 class MLPClassifier {
 public:
-	explicit MLPClassifier(int n_hidden_nodes, float lr, int lz, int ilz, int nc, int n_iter, int n_hl) {
+	explicit MLPClassifier(int n_hidden_nodes, float lr, int ilz, int nc, int n_iter, int n_hl) {
 		hidden_node_size = n_hidden_nodes,
-		learning_rate_sanity_check(lr) ? learning_rate = lr : learning_rate = 0.1f;
-		hidden_layer_size = lz; input_layer_size = ilz; weight_size = ilz + 1; n_classes = nc; weight_size_final = n_hidden_nodes + 1; no_iterations = n_iter;
+		learning_rate_sanity_check(lr) ? learning_rate = lr : learning_rate = 0.1f; input_layer_size = ilz; weight_size = ilz + 1; n_classes = nc; weight_size_final = n_hidden_nodes + 1; no_iterations = n_iter;
 		no_hidden_layers = n_hl;
 	};
 	~MLPClassifier() {};
 	typedef vector<vector<Node>> layer;
 	float learning_rate;
-	int hidden_layer_size;
 	int input_layer_size;
 	int weight_size_final;
 	int n_classes;
 	int weight_size;
 	int hidden_node_size;
 	int no_iterations;
-	int no_hidden_layers;
+	int no_hidden_layers; //
 	bool constexpr learning_rate_sanity_check(float range) {
 		if (IsInBounds(range, 0.0f, 1.0f)) {
 			return true;
@@ -369,10 +367,11 @@ public:
 
 
 int main() {
-
-	MLPClassifier mynet(10, 0.3f, 10, 20, 3, 50, 1);
+	// size of hidden layer is 0, initial learning rate is 0.3, training data is 20 X 1 (for now), no_classes is 3, number of training iterations is 50
+	// and there is one hidden layer.
+	MLPClassifier mynet(10, 0.3f, 20, 3, 50, 1);
 	cout << "input layer size is " << mynet.input_layer_size << endl;
-	cout << "my weights is " << mynet.weight_size << endl;
+	cout << "the number of hidden weights per node is " << mynet.weight_size << endl;
 	cout << "final layer weights is " << mynet.weight_size_final << endl;
 	cout << "learning rate is " << mynet.learning_rate << endl;
 	mynet.initialise_parameters();	
