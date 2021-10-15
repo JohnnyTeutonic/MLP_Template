@@ -217,7 +217,7 @@ public:
 
 	float loss_function_cross_entropy(Vec& p, Vec& q) { // p is ground truth, q is softmax/sigmoid predictions from forward prop
 		Vec loss_vec;
-		transform(p.begin(), p.end(), q.begin(), back_inserter(loss_vec), [&](float x, float y) {return x * (log(y) + float(1e-8)); });
+		transform(p.begin(), p.end(), q.begin(), back_inserter(loss_vec), [&](float x, float y) {return x * log(y+ float(1e-8)); });
 		float loss = accumulate(loss_vec.begin(), loss_vec.end(), 0.0f);
 		return -loss;
 	}
