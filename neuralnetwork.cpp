@@ -72,7 +72,8 @@ bool constexpr IsInBounds(const T& value, const T& low, const T& high) {
 
 class MLPClassifier {
 public:
-	explicit MLPClassifier(int n_hidden_nodes, float lr, int lz, int ilz, int nc, int n_iter, int n_hl) : hidden_node_size(n_hidden_nodes) {
+	explicit MLPClassifier(int n_hidden_nodes, float lr, int lz, int ilz, int nc, int n_iter, int n_hl) {
+		hidden_node_size = n_hidden_nodes,
 		learning_rate_sanity_check(lr) ? learning_rate = lr : learning_rate = 0.1f;
 		hidden_layer_size = lz; input_layer_size = ilz; weight_size = ilz + 1; n_classes = nc; weight_size_final = n_hidden_nodes + 1; no_iterations = n_iter;
 		no_hidden_layers = n_hl;
@@ -253,7 +254,7 @@ public:
 
 	Vec softmaxDerivative(Vec& weights) {
 		Vec derivativeWeights;
-		Vec act = softmaxoverflow(weights);
+		Vec act = this->softmaxoverflow(weights);
 		for (int i = 0; i < act.size(); i++) {
 			derivativeWeights.emplace_back(act[i] * (1.f - act[i]));
 		}
