@@ -291,11 +291,11 @@ public:
 		float da_prev, dW;
 		if (activation_function == "relu") {
 			auto dZ = this->relu_gradient(dA, Z_curr);
-			tie(da_prev, dW) = linear_backwards(dZ, W_curr, A_prev);
+			tie(da_prev, dW) = this->linear_backwards(dZ, W_curr, A_prev);
 		}
 		if (activation_function == "softmax") {
 			auto dZ = this->softmaxDerivative(Z_curr);
-			tie(da_prev, dW) = linear_backwards(dZ, W_curr, A_prev);
+			tie(da_prev, dW) = this->linear_backwards(dZ, W_curr, A_prev);
 		}
 		else { throw exception("only multi-class classification is supported at the moment."); }
 		return make_pair(da_prev, dW);
