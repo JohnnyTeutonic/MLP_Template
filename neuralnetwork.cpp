@@ -61,8 +61,7 @@ struct inputNode {
 struct container {
 	container() = default;
 	container(Vec t, Vec u, Vec v, Vec w, Vec x, Vec z) : W1(t), W2(u), A1(v), A2(w), Z1(x), Z2(z) {};
-	Vec W1, W2;
-	Vec A1, A2, Z1, Z2;
+	Vec W1, W2, A1, A2, Z1, Z2;
 };
 
 template <typename T>
@@ -158,15 +157,12 @@ public:
 	float double_dot_product(const vector<Node> &e, const Vec &p)
 	{
 		float result = 0;
-		for (auto& v : e) //range based loop
+		for (auto& v : e)
 			result += std::inner_product(v.weights.begin(), v.weights.end(), p.begin(), 0.0);
 		return result;
 	}
 
 	container forward_propagation(Vec& training_data) {
-		//if (training_data.size() != this->input_layer_size) {
-		//	training_data.emplace_back(0.0f); // fit training data with bias term
-		//}
 
 		Vec Z1, W1, Z2, W2;
 
@@ -201,7 +197,7 @@ public:
 		return res;
 	}
 
-	Vec convert_probs_to_class(Vec probs) {
+	Vec convert_probs_to_class(Vec& probs) {
 		Vec::iterator result = std::max_element(probs.begin(), probs.end());
 		int argmaxVal = distance(probs.begin(), result);
 		int selected_class = probs[argmaxVal];
@@ -305,7 +301,7 @@ public:
 	}
 
 
-	Vec backwards_propagation(Vec Y_hat, Vec& actual, Vec& training_data, container& ctr) {
+	Vec backwards_propagation(Vec& Y_hat, Vec& actual, Vec& training_data, container& ctr) {
 		Vec grads, result1, result2, dA_prev;
 		float myconstant{1};
 		transform(std::begin(Y_hat), std::begin(Y_hat) + Y_hat.size(), std::begin(actual),
@@ -330,7 +326,7 @@ public:
 		return ((a - b) < epsilon) && ((b - a) < epsilon);
 	}
 
-	bool get_accuracy_value(Vec& Y_hat, Vec& target) {
+	bool get_accuracy_value(const Vec& Y_hat, const Vec& target) {
 		assert(Y_hat.size() == target.size(), "predictions and targets must be same size");
 		for (int i = 0; i < Y_hat.size(); i++) {
 			if (int(target[i]) != int(0)) {
@@ -342,7 +338,7 @@ public:
 		return false;
 	}
 
-	void update_parameters(Vec & grads, float learning_rate, vector<Node> & hidden_nodes) {
+	void update_parameters(Vec & grads, const float learning_rate, vector<Node> & hidden_nodes) {
 		int grads_size = grads.size();
 		vector<Node> update_nodes;
 		for (int i = 0; i < grads_size; i++) {
