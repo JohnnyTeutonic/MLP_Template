@@ -111,7 +111,7 @@ public:
 		auto n_nodes = this->hidden_node_size;
 		for (auto i = 0; i < n_nodes; i++) {
 			Node mynode{ this->weight_size };
-			generate_weights(mynode);
+			this->generate_weights(mynode);
 			hidden_nodes.push_back(mynode);
 		}
 	}
@@ -120,7 +120,7 @@ public:
 		auto n_nodes = this->n_classes;
 		for (auto i = 0; i < n_nodes; i++) {
 			Node mynode{ this->weight_size_final };
-			generate_weights(mynode);
+			this->generate_weights(mynode);
 			final_nodes.push_back(mynode);
 		}
 	}
@@ -135,8 +135,8 @@ public:
 
 	void initialise_parameters() {
 		initial_nodes.reserve(this->input_layer_size);
-		populate_hidden_nodes();
-		populate_final_nodes();
+		this->populate_hidden_nodes();
+		this->populate_final_nodes();
 	}
 
 	template<typename T>
@@ -375,7 +375,7 @@ int main() {
 	cout << "my weights is " << mynet.weight_size << endl;
 	cout << "final layer weights is " << mynet.weight_size_final << endl;
 	cout << "learning rate is " << mynet.learning_rate << endl;
-	mynet.initialise_parameters();
+	mynet.initialise_parameters();	
 	Vec classes = { 0.0f, 1.0f, 0.0f }; // one-hot encoded - using floats for now but will change to ints in future implementation
 	Vec random_sample(mynet.input_layer_size);
 	random_sample.emplace_back(0.0f);
