@@ -8,6 +8,7 @@
 #include <utility>
 #include <variant>
 #include <vector>
+#include <cassert>
 #include <ctime>
 #include <cstdlib>
 using namespace std;
@@ -163,23 +164,21 @@ public:
 	}
 
 	container forward_propagation(Vec& training_data) {
-		if (training_data.size() != this->input_layer_size) {
-			training_data.emplace_back(0.0f); // fit training data with bias term
-		}
+		//if (training_data.size() != this->input_layer_size) {
+		//	training_data.emplace_back(0.0f); // fit training data with bias term
+		//}
 
-		Vec Z1;
-		Vec W1;
+		Vec Z1, W1, Z2, W2;
+
 		for (auto i = 0; i < this->hidden_nodes.size(); i++) {
-			Z1.emplace_back(double_dot_product(this->hidden_nodes, training_data));
-			//Z1.emplace_back(static_cast<float>(inner_product(training_data.begin(), training_data.end(), std::begin(this->hidden_nodes[i].weights), 0.0)));
+			//Z1.emplace_back(double_dot_product(this->hidden_nodes, training_data));
+			Z1.emplace_back(static_cast<float>(inner_product(training_data.begin(), training_data.end(), std::begin(this->hidden_nodes[i].weights), 0.0)));
 			for (auto j = 0; j < this->hidden_nodes[0].sz; j++) {
 				W1.emplace_back(this->hidden_nodes[i].weights[j]);
 			}
 		}
 
 		auto A1 = this->relu_it(Z1);
-		Vec Z2;
-		Vec W2;
 		for (auto i = 0; i < this->final_nodes.size(); i++) {
 			Z2.emplace_back(static_cast<float>(inner_product(A1.begin(), A1.end(), std::begin(this->final_nodes[i].weights), 0.0)));
 			for (auto j = 0; j < this->final_nodes[0].sz; j++) {
@@ -195,7 +194,9 @@ public:
 		auto size_vec = val.size();
 		Vec res;
 		for (auto i = 0; i < size_vec; i++) {
-			res.emplace_back(val[i] < 0.0f ? 0.0f : val[i]);
+			cout << val[i] << endl;
+			res.emplace_back(this->relu(val[i]));
+			cout << this->relu(val[i]) << endl;
 		}
 		return res;
 	}
@@ -214,7 +215,7 @@ public:
 		return val < 0.0f ? 0.0f : val;
 	}
 
-	float sigmoid(float x) {
+	float sigmoid(float x) { // will eventually be used for regression
 		return exp(x) / (exp(x) + 1.0f);
 	}
 
@@ -325,6 +326,21 @@ public:
 		return grads;
 	}
 
+	bool is_float_eq(float a, float b, float epsilon) {
+		return ((a - b) < epsilon) && ((b - a) < epsilon);
+	}
+
+	bool get_accuracy_value(Vec& Y_hat, Vec& target) {
+		assert(Y_hat.size() == target.size(), "predictions and targets must be same size");
+		for (int i = 0; i < Y_hat.size(); i++) {
+			if (int(target[i]) != int(0)) {
+				if (int(target[i]) == int(Y_hat[i])) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
 	void update_parameters(Vec & grads, float learning_rate, vector<Node> & hidden_nodes) {
 		int grads_size = grads.size();
@@ -336,17 +352,20 @@ public:
 			}
 		}
 	}
-	void train(Vec& training_data, Vec& target) {
+	pair<Vec, vector<bool>> train(Vec& training_data, Vec& target) {
 		Vec cost_history;
-		for (auto i = 0; i <= this->no_iterations; i++) {
+		vector<bool> accuracy_history;
+		for (auto i = 0; i < this->no_iterations; i++) {
 			container ctr{this->forward_propagation(training_data)};
 			Vec y_hat = this->convert_probs_to_class(ctr.A2);
-			float cost = this->loss_function_cross_entropy(y_hat, target);
+			float cost = this->loss_function_cross_entropy(target, y_hat);
+			bool accuracy = this->get_accuracy_value(y_hat, target);
 			Vec grads = this->backwards_propagation(y_hat, training_data, target, ctr);
 			this->update_parameters(grads, this->learning_rate, this->hidden_nodes);
 			cost_history.push_back(cost);
+			accuracy_history.push_back(accuracy);
 		}
-
+		return make_pair(cost_history, accuracy_history);
 	}
 };
 
@@ -360,120 +379,31 @@ int main() {
 	cout << "final layer weights is " << mynet.weight_size_final << endl;
 	cout << "learning rate is " << mynet.learning_rate << endl;
 	mynet.initialise_parameters();
-	Vec classes = { 0.0f,1.0f,0.0f };
+	Vec classes = { 0.0f, 1.0f, 0.0f };
+	Vec preds = { 0.0f, 1.0f, 0.0f};
 	Vec random_sample(mynet.input_layer_size);
 	random_sample.emplace_back(0.0f);
 	generate(random_sample.begin(), random_sample.end(), [&]() {return static_cast <float> (rand() % 5); });
-	Vec probs = { 0.3f, 0.2f, 0.5f };
-	for (auto& u : probs) {
-		cout << "probs " << u << endl;
+	for (auto& u : random_sample) {
+		cout << "sample " << u << endl;
 	}
-
 	container ctr{ mynet.forward_propagation(random_sample) };
 	Vec y_hat = mynet.convert_probs_to_class(ctr.A2);
 	for (auto& u: y_hat) {
 		cout << "preds " << u << endl;
 	}
 	getchar();
-	//Vec grads = mynet.backwards_propagation(classes, random_sample);
-	//for (auto &u : grads) {
-	//	cout << "grads" << endl;
-	//}
-	/*
-	for (auto &u : random_sample) {
-		cout << "random " << u << endl;
+	/*Vec grads = mynet.backwards_propagation(classes, random_sample);
+	for (auto &u : grads) {
+		cout << "grads" << endl;
 	}
-
 	vector<float> f = mynet.hidden_nodes[2].weights;
 	for (auto &x : f) {
 		cout << "weights " << x << endl;
 	}
-	auto firstprod = inner_product(random_sample.begin(), random_sample.end(), std::begin(mynet.hidden_nodes[0].weights), 0.0);
-	cout << "first prod is " << firstprod << endl;
-	auto prod = inner_product(std::begin(mynet.hidden_nodes[0].weights), std::end(mynet.hidden_nodes[0].weights), std::begin(mynet.final_nodes[0].weights), 0.0);
-	cout << "inner product is " << prod << endl;
-	auto allweights = mynet.forward_propagation(random_sample);
-
-
-	using Vec = vector<float>;
-	Vec a{ 1.2f, 1.4f, 1.6f };
-	Vec b{ 3.3f, 0.5f, 2.4f };
-	Vec result;
-	Vec result2;
-	transform(std::begin(a), std::begin(a) + a.size(), std::begin(b),
-		std::back_inserter(result), std::divides<>{});
-	for (auto &u : result) {
-		cout << "division result " << u << endl;
-	}
-	transform(std::begin(a), std::begin(a) + a.size(), std::begin(b),
-		std::back_inserter(result2), [](float x, float y) {return x - y; });
-	for (auto &u : result2) {
-		cout << "subtraction result " << u << endl;
-	}
-
-	std::vector<float> myarray;
-	float myconstant{ 1 };
-	std::transform(a.begin(), a.end(), std::back_inserter(myarray), [&myconstant](auto& c) {return (c)*(myconstant - c); });
-	for (auto &u : myarray) {
-		cout << "multiply by 1 times itself " << u << endl;
-	}
-	Vec A{ -2, 0, 1, 3, 0 };
-	Vec B{ 4,1,5,6,7 };
-	Vec C = mynet.setToZero(A);
-	Vec myres;
-	transform(C.begin(), C.end(), A.begin(), std::back_inserter(myres), std::multiplies<>{});
-
-	for (auto &b : myres) {
-		cout << "vals " << b << endl;
-	}
-
-	auto m = mynet.hidden_nodes.size();
-	cout << "m" << m << endl;
-	auto dW = (1 / m)*inner_product(A.begin(), A.end(), B.begin(), 0.0);
-	cout << "dW " << dW << endl;*/
-
-
-	//softmax(firstweights.begin(), firstweights.end());
-	//for (auto &u : firstweights) {
-	//	cout << "with softmax " << u << endl;
-	//}
-
-
-
-
-	/*vector<float> sense_check;
 	float norm = accumulate(firstweights.begin(), firstweights.end(), 0.0);
 	cout << "summed weights are " << norm << endl;
-
-
-	//for_each(output.begin(), output.end(), [&](float x) { dvd(x); });
-
-
-	//auto dotprod = mynet.linear_forward<Node>(mynet.hidden_nodes, mynet.final_nodes);
-	/*for (auto &u : random_sample) {
-		cout << "random " << u << endl;
-
-	}
-
-	mynet.populate_hidden_nodes();
-	for (auto &u : mynet.initial_nodes) {
-		cout << "hidden " << u << endl;
-	}
-
-	mynet.populate_final_nodes();
-	for (auto &u : mynet.final_nodes) {
-		cout << "final " << u << endl;
-	}
-
-	cout << "size is " << mynet.hidden_nodes.size() << endl;
-	cout << mynet.sigmoid(1.5f) << endl;
-	cout << mynet.relu(3.3f) << endl;
-	vector<float> actual{ 0.2f, 0.5f, 0.3f };
-	vector<float> preds{ 0.5f, 0.1f, 0.4f };
-	float ans = mynet.loss_function_cross_entropy(actual, preds);
-	cout << "cross entropy is " << ans << endl;
-	vector<vector<Node>> layer;
-	layer.push_back(mynet.hidden_nodes);*/
+	for_each(output.begin(), output.end(), [&](float x) { dvd(x); });*/
 
 	return 0;
 }
