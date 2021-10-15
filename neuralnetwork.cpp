@@ -367,8 +367,9 @@ public:
 
 
 int main() {
-	// size of hidden layer is 0, initial learning rate is 0.3, training data is 20 X 1 (for now), no_classes is 3, number of training iterations is 50
-	// and there is one hidden layer.
+	//### CONSTRUCTOR EXPLANATION ###
+	// size of the hidden layer is 10, initial learning rate is 0.3, training data is 20 X 1 (for now), no_classes to learn is 3, number of training iterations is 50
+	// with one hidden layer.
 	MLPClassifier mynet(10, 0.3f, 20, 3, 50, 1);
 	cout << "input layer size is " << mynet.input_layer_size << endl;
 	cout << "the number of hidden weights per node is " << mynet.weight_size << endl;
