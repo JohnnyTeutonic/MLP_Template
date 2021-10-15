@@ -65,7 +65,7 @@ struct container {
 };
 
 template <typename T>
-bool IsInBounds(const T& value, const T& low, const T& high) {
+bool constexpr IsInBounds(const T& value, const T& low, const T& high) {
 	return !(value < low) && (value < high);
 }
 
@@ -88,7 +88,7 @@ public:
 	int hidden_node_size;
 	int no_iterations;
 	int no_hidden_layers;
-	bool learning_rate_sanity_check(float range) {
+	bool constexpr learning_rate_sanity_check(float range) {
 		if (IsInBounds(range, 0.0f, 1.0f)) {
 			return true;
 		};
