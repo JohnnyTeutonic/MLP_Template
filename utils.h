@@ -16,7 +16,7 @@ using namespace std;
 
 using Vec = vector<float>;
 using myvariant = variant<float, Vec>;
-template <typename It> // templated variant for softmax activation function for different types of iterators
+template <typename It> // template for softmax activation function for different types of iterators
 void softmax(It beg, It end)
 {
 	using VType = typename iterator_traits<It>::value_type;
@@ -33,7 +33,7 @@ void softmax(It beg, It end)
 	transform(beg, end, beg, [&](VType x) { auto ex = exp(x - max_ele); exptot += ex; return ex; });
 }
 
-struct Node { // for hidden layers and final layer
+struct Node { // holds nodes for the hidden layers and the final layer
 	Node() = default;
 	explicit Node(unsigned int size) : weights(size) { sz = size; };
 	Node(const Node& copynode) : weights(copynode.weights) { sz = copynode.sz; };
@@ -52,7 +52,7 @@ struct Node { // for hidden layers and final layer
 	}
 };
 
-struct inputNode { // for the input layer
+struct inputNode { // holds nodes for the input layer
 	inputNode(float val) : value(val) {};
 	float value;
 	friend ostream& operator <<(ostream& os, const inputNode nd) {
@@ -89,7 +89,7 @@ bool is_float_eq(float a, float b, float epsilon) { // compares floating point v
 	return ((a - b) < epsilon) && ((b - a) < epsilon);
 }
 
-template <class T> // self-explanatory - compares size of vectors
+template <class T> // compares size of vectors
 static bool compareVectors(vector<T> a, vector<T> b)
 {
 	if (a.size() != b.size())
@@ -97,4 +97,20 @@ static bool compareVectors(vector<T> a, vector<T> b)
 		return false;
 	}
 	return true;
+}
+
+template<typename T> // generic function that multiplies a vector by a vector using arbitrary vector types
+auto linear_forward(vector<T> prev, vector<T> next, int index) {
+	return inner_product(begin(prev[index].weights), end(prev[index].weights), begin(next[index].weights), 0.0);
+}
+
+Vec matmul(const vector<Node>& W, const Vec& x, const Vec& b) { // matrix-vector product - results in a vector
+	Vec z(W.size(), 0.0);
+	for (unsigned int i = 0; i < W.size(); ++i) {
+		for (unsigned int j = 0; j < W[0].weights.size(); ++j) {
+			z[i] += W[i].weights[j] * x[j];
+		}
+		z[i] += b[i];
+	}
+	return z;
 }

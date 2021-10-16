@@ -1,13 +1,13 @@
 #include "utils.h"
 
-class MLPClassifier {
+class MLP {
 public:
-	explicit MLPClassifier(unsigned int ilz, unsigned int nc, unsigned int n_hidden_nodes, unsigned int n_hl, float lr, unsigned int n_iter) {
+	explicit MLP(unsigned int ilz, unsigned int nc, unsigned int n_hidden_nodes, unsigned int n_hl, float lr, unsigned int n_iter) {
 		input_layer_size = ilz, n_classes = nc, hidden_node_size = n_hidden_nodes, no_hidden_layers = n_hl,
 			learning_rate_sanity_check(lr) ? learning_rate = lr : learning_rate = 0.1f;  weight_size = ilz + 1, weight_size_final = n_hidden_nodes + 1, no_iterations = n_iter;
 	};
 
-	~MLPClassifier() {};
+	~MLP() {};
 	unsigned int input_layer_size, weight_size_final, n_classes, weight_size, hidden_node_size, no_iterations, no_hidden_layers;
 	typedef vector<vector<Node>> layer;
 	float learning_rate;
@@ -57,30 +57,6 @@ public:
 		initial_nodes.reserve(this->input_layer_size);
 		this->populate_hidden_nodes();
 		this->populate_final_nodes();
-	}
-
-	template<typename T>
-	auto linear_forward(vector<T> prev, vector<T> next, int index) {
-		return inner_product(begin(prev[index].weights), end(prev[index].weights), begin(next[index].weights), 0.0);
-	}
-
-	Vec matmul(const vector<Node>& W, const Vec& x, const Vec& b) {
-		Vec z(W.size(), 0.0);
-		for (unsigned int i = 0; i < W.size(); ++i) {
-			for (unsigned int j = 0; j < W[0].weights.size(); ++j) {
-				z[i] += W[i].weights[j] * x[j];
-			}
-			z[i] += b[i];
-		}
-		return z;
-	}
-
-	float double_dot_product(const vector<Node> &e, const Vec &p)
-	{
-		float result = 0;
-		for (auto& v : e)
-			result += inner_product(v.weights.begin(), v.weights.end(), p.begin(), 0.0);
-		return result;
 	}
 
 	container forward_propagation(Vec& training_data) {
@@ -182,7 +158,7 @@ public:
 
 	template<typename To, typename From> To convert(From f);
 	template<typename To, typename From>
-	To MLPClassifier::convert(From f)
+	To MLP::convert(From f)
 	{
 		return To();
 	}
@@ -351,7 +327,7 @@ int main() {
 	//##################### CONSTRUCTOR EXPLANATION AND INITIALISATION #####################
 	// Training data is 20 X 1 (for now), number of classes to predict is 3, size of the hidden layer is 10 nodes, with one hidden layer
 	// initial learning rate is 0.3 and number of training iterations is 50
-	MLPClassifier mynet(20, 3, 10, 1, 0.3, 50);
+	MLP mynet(20, 3, 10, 1, 0.3, 50);
 	cout << "input layer size is " << mynet.input_layer_size << endl;
 	cout << "the number of hidden weights per node is " << mynet.weight_size << endl;
 	cout << "final layer weights is " << mynet.weight_size_final << endl;
