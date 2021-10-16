@@ -6,7 +6,6 @@
 #include <string>
 #include <type_traits>
 #include <utility>
-#include <variant>
 #include <vector>
 #include <cassert>
 #include <ctime>
@@ -14,13 +13,13 @@
 using namespace std;
 
 using Vec = vector<float>;
-template <typename It>
+template <typename It> // templated variant for softmax activation function 
 void softmax(It beg, It end)
 {
 	using VType = typename iterator_traits<It>::value_type;
 
 	static_assert(is_floating_point<VType>::value,
-		"Softmax function only applicable for floating types");
+		"Softmax function only applicable for floating point types");
 
 	auto max_ele{ *max_element(beg, end) };
 
@@ -33,13 +32,13 @@ void softmax(It beg, It end)
 
 struct Node {
 	Node() = default;
-	Node(int size) : weights(size) { sz = size; };
+	explicit Node(unsigned int size) : weights(size) { sz = size; };
 	Node(const Node& copynode) : weights(copynode.weights) { sz = copynode.sz; };
-	int sz;
+	unsigned int sz;
 	vector<float> weights;
 	friend ostream& operator <<(ostream& os, const Node nd) {
 		os << "[";
-		size_t last = nd.weights.size() - 1;
+		unsigned int last = nd.sz - 1;
 		for (size_t i = 0; i < nd.weights.size(); ++i) {
 			os << nd.weights[i];
 			if (i != last)
@@ -72,34 +71,26 @@ bool constexpr IsInBounds(const T& value, const T& low, const T& high) {
 
 class MLPClassifier {
 public:
-	explicit MLPClassifier(int n_hidden_nodes, float lr, int ilz, int nc, int n_iter, int n_hl) {
+	explicit MLPClassifier(unsigned int n_hidden_nodes, float lr, unsigned int ilz, unsigned int nc, unsigned int n_iter, unsigned int n_hl) {
 		hidden_node_size = n_hidden_nodes,
 		learning_rate_sanity_check(lr) ? learning_rate = lr : learning_rate = 0.1f; input_layer_size = ilz; weight_size = ilz + 1; n_classes = nc; weight_size_final = n_hidden_nodes + 1; no_iterations = n_iter;
 		no_hidden_layers = n_hl;
 	};
 	~MLPClassifier() {};
+	unsigned int input_layer_size, weight_size_final, n_classes, weight_size, hidden_node_size, no_iterations, no_hidden_layers;
 	typedef vector<vector<Node>> layer;
 	float learning_rate;
-	int input_layer_size;
-	int weight_size_final;
-	int n_classes;
-	int weight_size;
-	int hidden_node_size;
-	int no_iterations;
-	int no_hidden_layers; //
+	vector<inputNode> initial_nodes;
+	vector<Node> hidden_nodes, final_nodes;
 	bool constexpr learning_rate_sanity_check(float range) {
 		if (IsInBounds(range, 0.0f, 1.0f)) {
 			return true;
 		};
 		return false;
 	}
-	vector<inputNode> initial_nodes;
-	vector<Node> hidden_nodes;
-	vector<Node> final_nodes;
-
 	void enter_training_data(Vec data) {
 		auto n_nodes = data.size();
-		for (auto i = 0; i < n_nodes; i++) {
+		for (unsigned int i = 0; i < n_nodes; i++) {
 			inputNode curnode{ float(data.at(i)) };
 			initial_nodes.push_back(curnode);
 		}
@@ -107,7 +98,7 @@ public:
 
 	void populate_hidden_nodes() {
 		auto n_nodes = this->hidden_node_size;
-		for (auto i = 0; i < n_nodes; i++) {
+		for (unsigned int i = 0; i < n_nodes; i++) {
 			Node mynode{ this->weight_size };
 			this->generate_weights(mynode);
 			hidden_nodes.push_back(mynode);
@@ -116,7 +107,7 @@ public:
 
 	void populate_final_nodes() {
 		auto n_nodes = this->n_classes;
-		for (auto i = 0; i < n_nodes; i++) {
+		for (unsigned int i = 0; i < n_nodes; i++) {
 			Node mynode{ this->weight_size_final };
 			this->generate_weights(mynode);
 			final_nodes.push_back(mynode);
@@ -165,18 +156,18 @@ public:
 
 		Vec Z1, W1, Z2, W2;
 
-		for (auto i = 0; i < this->hidden_nodes.size(); i++) {
+		for (unsigned int i = 0; i < this->hidden_nodes.size(); i++) {
 			//Z1.emplace_back(double_dot_product(this->hidden_nodes, training_data));
 			Z1.emplace_back(static_cast<float>(inner_product(training_data.begin(), training_data.end(), begin(this->hidden_nodes[i].weights), 0.0)));
-			for (auto j = 0; j < this->hidden_nodes[0].sz; j++) {
+			for (unsigned int j = 0; j < this->hidden_nodes[0].sz; j++) {
 				W1.emplace_back(this->hidden_nodes[i].weights[j]);
 			}
 		}
 
 		auto A1 = this->relu_it(Z1);
-		for (auto i = 0; i < this->final_nodes.size(); i++) {
+		for (unsigned int i = 0; i < this->final_nodes.size(); i++) {
 			Z2.emplace_back(static_cast<float>(inner_product(A1.begin(), A1.end(), begin(this->final_nodes[i].weights), 0.0)));
-			for (auto j = 0; j < this->final_nodes[0].sz; j++) {
+			for (unsigned int j = 0; j < this->final_nodes[0].sz; j++) {
 				W2.emplace_back(this->final_nodes[i].weights[j]);
 			}
 		}
@@ -188,10 +179,10 @@ public:
 	Vec relu_it(Vec& val) {
 		auto size_vec = val.size();
 		Vec res;
-		for (auto i = 0; i < size_vec; i++) {
-			cout << val[i] << endl;
+		for (unsigned int i = 0; i < size_vec; i++) {
+			cout << val[i] << endl; // for debugging purposes
+			cout << this->relu(val[i]) << endl; // for debugging purposes
 			res.emplace_back(this->relu(val[i]));
-			cout << this->relu(val[i]) << endl;
 		}
 		return res;
 	}
@@ -210,7 +201,7 @@ public:
 		return val < 0.0f ? 0.0f : val;
 	}
 
-	float sigmoid(float x) { // will eventually be used for regression
+	float sigmoid(float x) { // will eventually be used for regression in final layer or as an alternative activation layer for hidden layers
 		return exp(x) / (exp(x) + 1.0f);
 	}
 
@@ -222,7 +213,7 @@ public:
 		return -loss;
 	}
 
-	void print_hidden_layer_weights(layer l) {
+	void print_hidden_layer_weights(layer& l) {
 		for (unsigned int i = 0; i < l.size(); ++i)
 		{
 			for (unsigned int j = 0; j < l[i].size(); ++j)
@@ -234,17 +225,16 @@ public:
 	}
 
 	Vec softmaxoverflow(Vec& weights) {
-		Vec secondweights;
-		Vec sum;
+		Vec secondweights, sum;
 		float max = *max_element(weights.begin(), weights.end()); // use the max value to handle overflow issues
 
-		for (auto i = 0; i < weights.size(); i++) {
+		for (unsigned int i = 0; i < weights.size(); i++) {
 			sum.emplace_back(exp(weights[i] - max));
 		}
 
 		float norm2 = accumulate(sum.begin(), sum.end(), 0.0);
 
-		for (auto i = 0; i < weights.size(); i++) {
+		for (unsigned int i = 0; i < weights.size(); i++) {
 			secondweights.emplace_back(exp(weights[i] - max) / norm2);
 		}
 		return secondweights;
@@ -281,10 +271,10 @@ public:
 	pair<float, float> linear_backwards(Vec& dZ, Vec& W_curr, Vec& weights_prev) {
 		auto m = weights_prev.size();
 		float dW = (1 / m) * inner_product(dZ.begin(), dZ.end(), weights_prev.begin(), 0.0);
-		for (auto x : W_curr) {
+		for (auto x : W_curr) { // for debugging purposes
 			cout << "w_curr" << x << endl;
 		}
-		for (auto x : dZ) {
+		for (auto x : dZ) { // for debugging purposes
 			cout << "dz" << x << endl;
 		}
 
@@ -310,12 +300,12 @@ public:
 	Vec backwards_propagation(Vec& Y_hat, Vec& actual, Vec& training_data, container& ctr) {
 		Vec grads, result1, result2, dA_prev;
 		float myconstant{1};
-		transform(begin(Y_hat), begin(Y_hat) + Y_hat.size(), begin(actual),
+		transform(begin(Y_hat), Y_hat.end(), begin(actual),
 			back_inserter(result1), [](float x, float y) {return x - y; });
 		transform(Y_hat.begin(), Y_hat.end(), back_inserter(result2), [&myconstant](auto& c) {return (c)*(myconstant - c); });
-		transform(result1.begin(), result1.begin() + result1.size(), result2.begin(),
+		transform(result1.begin(), result1.end(), result2.begin(),
 			back_inserter(dA_prev), divides<>{});
-		for (auto i = 0; i < 2; i++) { // this implementation only has a single hidden layer for now
+		for (unsigned int i = 0; i < 2; i++) { // this implementation only has a single hidden layer for now
 			auto dA_curr = dA_prev;
 			float dA_prev, dW_prev;
 			if (i==0){
@@ -345,10 +335,10 @@ public:
 	}
 
 	void update_parameters(Vec & grads, const float learning_rate, vector<Node> & hidden_nodes) {
-		int grads_size = grads.size();
+		unsigned int grads_size = grads.size();
 		vector<Node> update_nodes;
-		for (int i = 0; i < grads_size; i++) {
-			for (int j = 0; j < hidden_nodes[0].weights.size(); j++) {
+		for (unsigned int i = 0; i < grads_size; i++) {
+			for (unsigned int j = 0; j < hidden_nodes[0].weights.size(); j++) {
 				//transform(hidden_nodes[i].weights.begin(), hidden_nodes[i].weights.end(), update_nodes[i].weights.begin(), [learning_rate, grads, i] { learning_rate - grads[i]; });
 				this->hidden_nodes[i].weights[j] = this->hidden_nodes[i].weights[j] - this->learning_rate*grads[i];
 			}
@@ -374,7 +364,7 @@ public:
 
 
 int main() {
-	//### CONSTRUCTOR EXPLANATION ###
+	//##################### CONSTRUCTOR EXPLANATION AND INITIALISATION #####################
 	// size of the hidden layer is 10, initial learning rate is 0.3, training data is 20 X 1 (for now), no_classes to learn is 3, number of training iterations is 50
 	// with one hidden layer.
 	MLPClassifier mynet(10, 0.3f, 20, 3, 50, 1);
@@ -396,10 +386,10 @@ int main() {
 		cout << "preds " << u << endl;
 	}
 	getchar();
-	/*Vec grads = mynet.backwards_propagation(classes, y_hat, random_sample, ctr);
+	Vec grads = mynet.backwards_propagation(classes, y_hat, random_sample, ctr);
 	for (auto &u : grads) {
 		cout << "grads" << endl;
-	}*/
+	}
 
 	return 0;
 }
