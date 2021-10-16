@@ -268,7 +268,7 @@ public:
 		return b;
 	}
 
-	pair<float, float> linear_backwards(Vec& dZ, Vec& W_curr, Vec& weights_prev) {
+	pair<float, float> linear_backwards(Vec& dZ, Vec& W_curr, Vec& weights_prev) { // TO-DO - fix dot product issue with inner product
 		auto m = weights_prev.size();
 		float dW = (1 / m) * inner_product(dZ.begin(), dZ.end(), weights_prev.begin(), 0.0);
 		for (auto x : W_curr) { // for debugging purposes
@@ -386,10 +386,10 @@ int main() {
 		cout << "preds " << u << endl;
 	}
 	getchar();
-	Vec grads = mynet.backwards_propagation(classes, y_hat, random_sample, ctr);
+	/*Vec grads = mynet.backwards_propagation(classes, y_hat, random_sample, ctr);
 	for (auto &u : grads) {
 		cout << "grads" << endl;
-	}
+	}*/
 
 	return 0;
 }
