@@ -1,81 +1,12 @@
-#include <algorithm>
-#include <functional>
-#include <iostream>
-#include <iterator>
-#include <numeric>
-#include <string>
-#include <type_traits>
-#include <utility>
-#include <vector>
-#include <cassert>
-#include <ctime>
-#include <cstdlib>
-using namespace std;
-
-using Vec = vector<float>;
-template <typename It> // templated variant for softmax activation function 
-void softmax(It beg, It end)
-{
-	using VType = typename iterator_traits<It>::value_type;
-
-	static_assert(is_floating_point<VType>::value,
-		"Softmax function only applicable for floating point types");
-
-	auto max_ele{ *max_element(beg, end) };
-
-	transform(beg, end, beg, [&](VType x) { return exp(x - max_ele); });
-
-	VType exptot = accumulate(beg, end, 0.0);
-
-	transform(beg,end, beg, [&](VType x) { auto ex = exp(x - max_ele); exptot += ex; return ex; });
-}
-
-struct Node {
-	Node() = default;
-	explicit Node(unsigned int size) : weights(size) { sz = size; };
-	Node(const Node& copynode) : weights(copynode.weights) { sz = copynode.sz; };
-	unsigned int sz;
-	vector<float> weights;
-	friend ostream& operator <<(ostream& os, const Node nd) {
-		os << "[";
-		unsigned int last = nd.sz - 1;
-		for (size_t i = 0; i < nd.weights.size(); ++i) {
-			os << nd.weights[i];
-			if (i != last)
-				os << ", ";
-		}
-		os << "]";
-		return os;
-	}
-};
-
-struct inputNode {
-	inputNode(float val) : value(val) {};
-	float value;
-	friend ostream& operator <<(ostream& os, const inputNode nd) {
-		return os << "[" << nd.value << "]";
-	}
-};
-
-struct container {
-	container() = default;
-	container(Vec t, Vec u, Vec v, Vec w, Vec x, Vec z) : W1(t), W2(u), A1(v), A2(w), Z1(x), Z2(z) {};
-	Vec W1, W2, A1, A2, Z1, Z2;
-};
-
-template <typename T>
-bool constexpr IsInBounds(const T& value, const T& low, const T& high) {
-	return !(value < low) && (value < high);
-}
-
+#include "utils.h"
 
 class MLPClassifier {
 public:
-	explicit MLPClassifier(unsigned int n_hidden_nodes, float lr, unsigned int ilz, unsigned int nc, unsigned int n_iter, unsigned int n_hl) {
-		hidden_node_size = n_hidden_nodes,
-		learning_rate_sanity_check(lr) ? learning_rate = lr : learning_rate = 0.1f; input_layer_size = ilz; weight_size = ilz + 1; n_classes = nc; weight_size_final = n_hidden_nodes + 1; no_iterations = n_iter;
-		no_hidden_layers = n_hl;
+	explicit MLPClassifier(unsigned int ilz, unsigned int nc, unsigned int n_hidden_nodes, unsigned int n_hl, float lr, unsigned int n_iter) {
+		input_layer_size = ilz, n_classes = nc, hidden_node_size = n_hidden_nodes, no_hidden_layers = n_hl,
+			learning_rate_sanity_check(lr) ? learning_rate = lr : learning_rate = 0.1f;  weight_size = ilz + 1, weight_size_final = n_hidden_nodes + 1, no_iterations = n_iter;
 	};
+
 	~MLPClassifier() {};
 	unsigned int input_layer_size, weight_size_final, n_classes, weight_size, hidden_node_size, no_iterations, no_hidden_layers;
 	typedef vector<vector<Node>> layer;
@@ -240,13 +171,24 @@ public:
 		return secondweights;
 	}
 
-	Vec softmaxDerivative(Vec& weights) {
+	Vec softmax_gradient(Vec& weights) {
 		Vec derivativeWeights;
 		Vec act = this->softmaxoverflow(weights);
 		for (int i = 0; i < act.size(); i++) {
 			derivativeWeights.emplace_back(act[i] * (1.f - act[i]));
 		}
 		return derivativeWeights;
+	}
+
+	template<typename To, typename From> To convert(From f);
+	template<typename To, typename From>
+	To MLPClassifier::convert(From f)
+	{
+		return To();
+	}
+
+	float sigmoid_gradient(float output) {
+		return (output * (1.f - output));
 	}
 
 	Vec relu_gradient(Vec& dA, Vec& Z) {
@@ -268,33 +210,76 @@ public:
 		return b;
 	}
 
-	pair<float, float> linear_backwards(Vec& dZ, Vec& W_curr, Vec& weights_prev) { // TO-DO - fix dot product issue with inner product
+
+	pair<float, float> linear_backwards(Vec& dZ, Vec& W_curr, Vec& weights_prev) { // TO-DO - fix issue with inner product
 		auto m = weights_prev.size();
-		float dW = (1 / m) * inner_product(dZ.begin(), dZ.end(), weights_prev.begin(), 0.0);
+	    float(dW) = (1 / m) * inner_product(dZ.begin(), dZ.end(), weights_prev.begin(), 0.0);
 		for (auto x : W_curr) { // for debugging purposes
 			cout << "w_curr" << x << endl;
 		}
 		for (auto x : dZ) { // for debugging purposes
 			cout << "dz" << x << endl;
 		}
-
 		float(dA_prev) = inner_product(W_curr.begin(), W_curr.end(), dZ.begin(), 0.0);
 		return make_pair(dA_prev, dW);
 	}
+	
 
-	pair<float, float> linear_activation_backwards(Vec& dA, Vec& W_curr, Vec& Z_curr, Vec& A_prev, string activation_function = "relu") {
-		float da_prev, dW;
+	pair<Vec, Vec> linear_backwards(float dZ, Vec& W_curr, Vec& weights_prev) { // TO-DO - fix issue with inner product
+		auto m = weights_prev.size();
+		Vec dW, dA_prev;
+		transform(weights_prev.begin(), weights_prev.end(), back_inserter(dW), [&dZ, &m](auto& c) {return (1 / m)*(c)*(dZ - c); });
+		transform(W_curr.begin(), W_curr.end(), back_inserter(dA_prev), [&dZ](auto& c) {return (c)*(dZ - c); });
+		return make_pair(dA_prev, dW);
+	}
+
+
+	/*pair<Visitor, Visitor> linear_activation_backwards_variant(Vec& dA, Vec& W_curr, myvariant& Z_curr, Vec& A_prev, string activation_function = "relu") {
+		myvariant da_prev = 0.0f;
+		myvariant dW = Vec{};
+		visit(Visitor3(), da_prev);
+		if (activation_function == "relu") {
+			auto dZ = this->relu_gradient(dA, get<Vec>(Z_curr));
+			tie(da_prev, dW) = this->linear_backwards(dZ, W_curr, A_prev);
+		}
+		else if (activation_function == "sigmoid") {
+			auto dZ = this->sigmoid_gradient(get<float>(Z_curr));
+			tie(da_prev, dW) = this->linear_backwards(dZ, W_curr, A_prev);
+		}
+
+		else if (activation_function == "softmax") {
+			auto dZ = this->softmax_gradient(get<Vec>(Z_curr));
+			tie(da_prev, dW) = this->linear_backwards(dZ, W_curr, A_prev);
+		}
+		return make_pair(da_prev, dW);
+	}*/
+
+
+	pair<float, float> linear_activation_backwards(Vec& dA, Vec& W_curr, Vec& Z_curr, Vec& A_prev, string activation_function = "relu") { // for classification
+		float da_prev; 
+		float dW;
 		if (activation_function == "relu") {
 			auto dZ = this->relu_gradient(dA, Z_curr);
 			tie(da_prev, dW) = this->linear_backwards(dZ, W_curr, A_prev);
 		}
 		if (activation_function == "softmax") {
-			auto dZ = this->softmaxDerivative(Z_curr);
+			auto dZ = this->softmax_gradient(Z_curr);
 			tie(da_prev, dW) = this->linear_backwards(dZ, W_curr, A_prev);
 		}
-		else { throw runtime_error("only multi-class classification is supported at the moment."); }
+		else { throw runtime_error("only multi-class classification is supported for this function."); }
 		return make_pair(da_prev, dW);
 	}
+
+
+	pair<Vec, Vec> linear_activation_backwards(Vec& dA, Vec& W_curr, float& Z_curr, Vec& A_prev, string activation_function = "sigmoid") { // overloaded function for regression
+	Vec da_prev, dW;
+	if (activation_function == "sigmoid") {
+		auto dZ = this->sigmoid_gradient(Z_curr);
+		tie(da_prev, dW) = this->linear_backwards(dZ, W_curr, A_prev);
+	}
+	else { throw runtime_error("this function is only used for regression."); }
+	return make_pair(da_prev, dW);
+}
 
 
 	Vec backwards_propagation(Vec& Y_hat, Vec& actual, Vec& training_data, container& ctr) {
@@ -318,12 +303,8 @@ public:
 		return grads;
 	}
 
-	bool is_float_eq(float a, float b, float epsilon) {
-		return ((a - b) < epsilon) && ((b - a) < epsilon);
-	}
-
-	bool get_accuracy_value(const Vec& Y_hat, const Vec& target) {
-		assert(Y_hat.size() == target.size(), "predictions and targets must be same size");
+	bool get_accuracy_value(Vec& Y_hat, Vec& target) {
+		if (!(compareVectors(Y_hat, target))) { throw runtime_error("vectors not of the same size!"); };
 		for (int i = 0; i < Y_hat.size(); i++) {
 			if (int(target[i]) != int(0)) {
 				if (int(target[i]) == int(Y_hat[i])) {
@@ -365,15 +346,15 @@ public:
 
 int main() {
 	//##################### CONSTRUCTOR EXPLANATION AND INITIALISATION #####################
-	// size of the hidden layer is 10, initial learning rate is 0.3, training data is 20 X 1 (for now), no_classes to learn is 3, number of training iterations is 50
-	// with one hidden layer.
-	MLPClassifier mynet(10, 0.3f, 20, 3, 50, 1);
+	// Training data is 20 X 1 (for now), number of classes to predict is 3, size of the hidden layer is 10 nodes, with one hidden layer
+	// initial learning rate is 0.3 and number of training iterations is 50
+	MLPClassifier mynet(20, 3, 10, 1, 0.3, 50);
 	cout << "input layer size is " << mynet.input_layer_size << endl;
 	cout << "the number of hidden weights per node is " << mynet.weight_size << endl;
 	cout << "final layer weights is " << mynet.weight_size_final << endl;
 	cout << "learning rate is " << mynet.learning_rate << endl;
 	mynet.initialise_parameters();	
-	Vec classes = { 0.0f, 1.0f, 0.0f }; // one-hot encoded - using floats for now but will change to ints in future implementation
+	Vec classes = { 0.0f, 1.0f, 0.0f }; // one-hot encoded - using floats for now but will change to ints in a future implementation
 	Vec random_sample(mynet.input_layer_size);
 	random_sample.emplace_back(0.0f);
 	generate(random_sample.begin(), random_sample.end(), [&]() {return static_cast <float> (rand() % 5); });
@@ -385,8 +366,11 @@ int main() {
 	for (auto& u: y_hat) {
 		cout << "preds " << u << endl;
 	}
+	Node newnode{ 3 };
+	mynet.generate_weights(newnode);
+	cout <<  "random node " << newnode << endl;
 	getchar();
-	/*Vec grads = mynet.backwards_propagation(classes, y_hat, random_sample, ctr);
+	/*Vec grads = mynet.backwards_propagation(classes, y_hat, random_sample, ctr); // backprop needs some more work
 	for (auto &u : grads) {
 		cout << "grads" << endl;
 	}*/
