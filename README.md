@@ -1,5 +1,5 @@
 # MLP_Template
-Experiment with creating an MLP from scratch
+Experiment with creating an MLP from scratch in C++
 ## WIP
 - currently supports only a single hidden layer
 - suports both classification and regression
