@@ -282,7 +282,7 @@ public:
 }
 
 
-	Vec backwards_propagation(Vec& Y_hat, Vec& actual, Vec& training_data, container& ctr) {
+	Vec backwards_propagation(Vec & Y_hat, Vec & actual, Vec & training_data, container& ctr) {
 		Vec grads, result1, result2, dA_prev;
 		float myconstant{1};
 		transform(begin(Y_hat), Y_hat.end(), begin(actual),
@@ -303,7 +303,7 @@ public:
 		return grads;
 	}
 
-	bool get_accuracy_value(Vec& Y_hat, Vec& target) {
+	bool get_accuracy_value(Vec & Y_hat, Vec & target) {
 		if (!(compareVectors(Y_hat, target))) { throw runtime_error("vectors not of the same size!"); };
 		for (int i = 0; i < Y_hat.size(); i++) {
 			if (int(target[i]) != int(0)) {
@@ -315,17 +315,20 @@ public:
 		return false;
 	}
 
-	void update_parameters(Vec & grads, const float learning_rate, vector<Node> & hidden_nodes) {
+	void update_parameters(Vec & grads, const float learning_rate, vector<Node> & hidden_nodes) { // TO-DO check this function works as expected. Might require loop fixes.
 		unsigned int grads_size = grads.size();
-		vector<Node> update_nodes;
+		//vector<Node> update_nodes;
+		//transform(hidden_nodes[i].weights.begin(), hidden_nodes[i].weights.end(), update_nodes[i].weights.begin(), [learning_rate, grads, i] { learning_rate - grads[i]; });
 		for (unsigned int i = 0; i < grads_size; i++) {
-			for (unsigned int j = 0; j < hidden_nodes[0].weights.size(); j++) {
-				//transform(hidden_nodes[i].weights.begin(), hidden_nodes[i].weights.end(), update_nodes[i].weights.begin(), [learning_rate, grads, i] { learning_rate - grads[i]; });
-				this->hidden_nodes[i].weights[j] = this->hidden_nodes[i].weights[j] - this->learning_rate*grads[i];
+			for (unsigned j = 0; j < this->hidden_node_size; j++) { 
+				for (unsigned int k = 0; j < this->hidden_nodes[0].weights.size(); j++) {
+					this->hidden_nodes[k].weights[j] -= this->learning_rate*grads[i];
+				}
 			}
 		}
 	}
-	pair<Vec, vector<bool>> train(Vec& training_data, Vec& target) {
+
+	pair<Vec, vector<bool>> train(Vec & training_data, Vec & target) {
 		Vec cost_history;
 		vector<bool> accuracy_history;
 		for (auto i = 0; i < this->no_iterations; i++) {

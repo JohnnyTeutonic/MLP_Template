@@ -33,7 +33,7 @@ void softmax(It beg, It end)
 	transform(beg, end, beg, [&](VType x) { auto ex = exp(x - max_ele); exptot += ex; return ex; });
 }
 
-struct Node { // for hidden layers and final layers
+struct Node { // for hidden layers and final layer
 	Node() = default;
 	explicit Node(unsigned int size) : weights(size) { sz = size; };
 	Node(const Node& copynode) : weights(copynode.weights) { sz = copynode.sz; };
@@ -66,7 +66,7 @@ struct container { // contains the output from forward prop and is carried forwa
 	Vec W1, W2, A1, A2, Z1, Z2;
 };
 
-struct Visitor
+struct Visitor // for use with std::variant
 {
 	const int operator()(const int & t) const
 	{
@@ -79,17 +79,17 @@ struct Visitor
 };
 
 
-template <typename T>
+template <typename T> // ensures the learning rate is bounded
 bool constexpr IsInBounds(const T& value, const T& low, const T& high) {
 	return !(value < low) && (value < high);
 }
 
 
-bool is_float_eq(float a, float b, float epsilon) {
+bool is_float_eq(float a, float b, float epsilon) { // compares floating point values; uses epsilon to ensure the values are approximately equal up to a limit
 	return ((a - b) < epsilon) && ((b - a) < epsilon);
 }
 
-template <class T>
+template <class T> // self-explanatory - compares size of vectors
 static bool compareVectors(vector<T> a, vector<T> b)
 {
 	if (a.size() != b.size())
