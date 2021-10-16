@@ -126,7 +126,7 @@ public:
 
 	void generate_weights(Node& n) {
 		if (n.weights.size() == 0) {
-			throw exception("weights not initialised");
+			throw runtime_error("weights not initialised");
 		}
 		generate(n.weights.begin(), n.weights.end(), [&]() {return 0.1f * static_cast <float> (rand()) / static_cast <float> (RAND_MAX); });
 	}
@@ -236,7 +236,7 @@ public:
 	Vec softmaxoverflow(Vec& weights) {
 		Vec secondweights;
 		Vec sum;
-		float max = *max_element(weights.begin(), weights.end());
+		float max = *max_element(weights.begin(), weights.end()); // use the max value to handle overflow issues
 
 		for (auto i = 0; i < weights.size(); i++) {
 			sum.emplace_back(exp(weights[i] - max));
@@ -281,6 +281,13 @@ public:
 	pair<float, float> linear_backwards(Vec& dZ, Vec& W_curr, Vec& weights_prev) {
 		auto m = weights_prev.size();
 		float dW = (1 / m) * inner_product(dZ.begin(), dZ.end(), weights_prev.begin(), 0.0);
+		for (auto x : W_curr) {
+			cout << "w_curr" << x << endl;
+		}
+		for (auto x : dZ) {
+			cout << "dz" << x << endl;
+		}
+
 		float(dA_prev) = inner_product(W_curr.begin(), W_curr.end(), dZ.begin(), 0.0);
 		return make_pair(dA_prev, dW);
 	}
@@ -295,7 +302,7 @@ public:
 			auto dZ = this->softmaxDerivative(Z_curr);
 			tie(da_prev, dW) = this->linear_backwards(dZ, W_curr, A_prev);
 		}
-		else { throw exception("only multi-class classification is supported at the moment."); }
+		else { throw runtime_error("only multi-class classification is supported at the moment."); }
 		return make_pair(da_prev, dW);
 	}
 
@@ -392,14 +399,7 @@ int main() {
 	/*Vec grads = mynet.backwards_propagation(classes, y_hat, random_sample, ctr);
 	for (auto &u : grads) {
 		cout << "grads" << endl;
-	}
-	vector<float> f = mynet.hidden_nodes[2].weights;
-	for (auto &x : f) {
-		cout << "weights " << x << endl;
-	}
-	float norm = accumulate(firstweights.begin(), firstweights.end(), 0.0);
-	cout << "summed weights are " << norm << endl;
-	for_each(output.begin(), output.end(), [&](float x) { dvd(x); });*/
+	}*/
 
 	return 0;
 }
