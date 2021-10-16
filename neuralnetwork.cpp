@@ -213,7 +213,7 @@ public:
 	/*pair<Visitor, Visitor> linear_activation_backwards_variant(Vec& dA, Vec& W_curr, myvariant& Z_curr, Vec& A_prev, string activation_function = "relu") {
 		myvariant da_prev = 0.0f;
 		myvariant dW = Vec{};
-		visit(Visitor3(), da_prev);
+		visit(Visitor(), da_prev);
 		if (activation_function == "relu") {
 			auto dZ = this->relu_gradient(dA, get<Vec>(Z_curr));
 			tie(da_prev, dW) = this->linear_backwards(dZ, W_curr, A_prev);
