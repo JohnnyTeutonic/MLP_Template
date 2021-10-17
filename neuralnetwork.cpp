@@ -54,7 +54,7 @@ public:
 	}
 
 	void initialise_parameters() {
-		initial_nodes.reserve(this->input_layer_size);
+		this->initial_nodes.reserve(this->input_layer_size);
 		this->populate_hidden_nodes();
 		this->populate_final_nodes();
 	}
@@ -157,7 +157,7 @@ public:
 	}
 
 	template<typename To, typename From> To convert(From f);
-	template<typename To, typename From>
+	template<typename To, typename From> // convert from one type to another
 	To MLP::convert(From f)
 	{
 		return To();
@@ -189,7 +189,7 @@ public:
 
 	pair<float, float> linear_backwards(Vec & dZ, Vec & W_curr, Vec & weights_prev) { // TO-DO - fix issue with inner product
 		auto m = weights_prev.size();
-	    float(dW) = (1 / m) * inner_product(dZ.begin(), dZ.end(), weights_prev.begin(), 0.0);
+		float(dW) = (1 / m) * inner_product(dZ.begin(), dZ.end(), weights_prev.begin(), 0.0);
 		for (auto x : W_curr) { // for debugging purposes
 			cout << "w_curr" << x << endl;
 		}
@@ -279,7 +279,7 @@ public:
 		return grads;
 	}
 
-	bool get_accuracy_value(Vec & Y_hat, Vec & target) {
+	bool get_accuracy_value(Vec & Y_hat, Vec & target) { // TO-DO - use sentinel value for optimisation of the comparison loop
 		if (!(compareVectors(Y_hat, target))) { throw runtime_error("vectors not of the same size!"); };
 		for (int i = 0; i < Y_hat.size(); i++) {
 			if (int(target[i]) != int(0)) {
@@ -291,7 +291,7 @@ public:
 		return false;
 	}
 
-	void update_parameters(Vec & grads, const float learning_rate, vector<Node> & hidden_nodes) { // TO-DO check this function works as expected. Might require loop fixes.
+	void update_parameters(Vec & grads, const float learning_rate, vector<Node> & hidden_nodes) { // TO-DO - check this function works as expected. Might require loop fixes.
 		unsigned int grads_size = grads.size();
 		//vector<Node> update_nodes;
 		//transform(hidden_nodes[i].weights.begin(), hidden_nodes[i].weights.end(), update_nodes[i].weights.begin(), [learning_rate, grads, i] { learning_rate - grads[i]; });
@@ -325,7 +325,7 @@ public:
 
 int main() {
 	//##################### CONSTRUCTOR EXPLANATION AND INITIALISATION #####################
-	// Training data is 20 X 1 (for now), number of classes to predict is 3, size of the hidden layer is 10 nodes, with one hidden layer
+	// Training data is 20 X 1, number of classes to predict is 3, size of the hidden layer is 10 nodes, with one hidden layer
 	// initial learning rate is 0.3 and number of training iterations is 50
 	MLP mynet(20, 3, 10, 1, 0.3, 50);
 	cout << "input layer size is " << mynet.input_layer_size << endl;

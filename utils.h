@@ -104,7 +104,7 @@ auto linear_forward(vector<T> prev, vector<T> next, int index) {
 	return inner_product(begin(prev[index].weights), end(prev[index].weights), begin(next[index].weights), 0.0);
 }
 
-Vec matmul(const vector<Node>& W, const Vec& x, const Vec& b) { // matrix-vector product - results in a vector
+Vec matmul(const vector<Node> & W, const Vec & x, const Vec & b) { // matrix-vector product - results in a vector
 	Vec z(W.size(), 0.0);
 	for (unsigned int i = 0; i < W.size(); ++i) {
 		for (unsigned int j = 0; j < W[0].weights.size(); ++j) {
