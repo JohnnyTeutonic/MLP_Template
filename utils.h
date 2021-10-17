@@ -38,7 +38,7 @@ struct Node { // holds nodes for the hidden layers and the final layer
 	explicit Node(unsigned int size) : weights(size) { sz = size; };
 	Node(const Node& copynode) : weights(copynode.weights) { sz = copynode.sz; };
 	unsigned int sz;
-	vector<float> weights;
+	Vec weights;
 	friend ostream& operator <<(ostream& os, const Node nd) {
 		os << "[";
 		unsigned int last = nd.sz - 1;

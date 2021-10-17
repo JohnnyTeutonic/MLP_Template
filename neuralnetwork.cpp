@@ -23,7 +23,7 @@ public:
 		auto n_nodes = data.size();
 		for (unsigned int i = 0; i < n_nodes; i++) {
 			inputNode curnode{ float(data.at(i)) };
-			initial_nodes.push_back(curnode);
+			this->initial_nodes.push_back(curnode);
 		}
 	}
 
@@ -32,7 +32,7 @@ public:
 		for (unsigned int i = 0; i < n_nodes; i++) {
 			Node mynode{ this->weight_size };
 			this->generate_weights(mynode);
-			hidden_nodes.push_back(mynode);
+			this->hidden_nodes.push_back(mynode);
 		}
 	}
 
@@ -41,12 +41,12 @@ public:
 		for (unsigned int i = 0; i < n_nodes; i++) {
 			Node mynode{ this->weight_size_final };
 			this->generate_weights(mynode);
-			final_nodes.push_back(mynode);
+			this->final_nodes.push_back(mynode);
 		}
 	}
 
 
-	void generate_weights(Node& n) {
+	void generate_weights(Node & n) {
 		if (n.weights.size() == 0) {
 			throw runtime_error("weights not initialised");
 		}
@@ -83,7 +83,7 @@ public:
 		return cnt;
 	}
 
-	Vec relu_it(Vec& val) {
+	Vec relu_it(Vec & val) {
 		auto size_vec = val.size();
 		Vec res;
 		for (unsigned int i = 0; i < size_vec; i++) {
@@ -94,7 +94,7 @@ public:
 		return res;
 	}
 
-	Vec convert_probs_to_class(Vec& probs) {
+	Vec convert_probs_to_class(Vec & probs) {
 		Vec::iterator result = max_element(probs.begin(), probs.end());
 		int argmaxVal = distance(probs.begin(), result);
 		int selected_class = probs[argmaxVal];
@@ -113,14 +113,14 @@ public:
 	}
 
 
-	float loss_function_cross_entropy(Vec& p, Vec& q) { // p is ground truth, q is softmax/sigmoid predictions from forward prop
+	float loss_function_cross_entropy(Vec & p, Vec & q, float epsilon=1e-8) { // p is ground truth, q is softmax/sigmoid predictions from forward prop
 		Vec loss_vec;
-		transform(p.begin(), p.end(), q.begin(), back_inserter(loss_vec), [&](float x, float y) {return x * log(y+ float(1e-8)); });
+		transform(p.begin(), p.end(), q.begin(), back_inserter(loss_vec), [&](float x, float y) {return x * log( y+ epsilon); });
 		float loss = accumulate(loss_vec.begin(), loss_vec.end(), 0.0f);
 		return -loss;
 	}
 
-	void print_hidden_layer_weights(layer& l) {
+	void print_hidden_layer_weights(layer & l) {
 		for (unsigned int i = 0; i < l.size(); ++i)
 		{
 			for (unsigned int j = 0; j < l[i].size(); ++j)
@@ -131,7 +131,7 @@ public:
 		}
 	}
 
-	Vec softmaxoverflow(Vec& weights) {
+	Vec softmaxoverflow(Vec & weights) {
 		Vec secondweights, sum;
 		float max = *max_element(weights.begin(), weights.end()); // use the max value to handle overflow issues
 
@@ -147,7 +147,7 @@ public:
 		return secondweights;
 	}
 
-	Vec softmax_gradient(Vec& weights) {
+	Vec softmax_gradient(Vec & weights) {
 		Vec derivativeWeights;
 		Vec act = this->softmaxoverflow(weights);
 		for (int i = 0; i < act.size(); i++) {
@@ -167,7 +167,7 @@ public:
 		return (output * (1.f - output));
 	}
 
-	Vec relu_gradient(Vec& dA, Vec& Z) {
+	Vec relu_gradient(Vec & dA, Vec & Z) {
 		Vec A = this->relu_it(Z);
 		Vec B = this->setToZero(A);
 		Vec dZ;
@@ -175,7 +175,7 @@ public:
 		return dZ;
 	}
 
-	Vec setToZero(Vec &a) {
+	Vec setToZero(Vec & a) {
 		Vec b;
 		for (auto i = a.begin(); i != a.end(); i++) {
 			if (*i < 0.0f) {
@@ -187,7 +187,7 @@ public:
 	}
 
 
-	pair<float, float> linear_backwards(Vec& dZ, Vec& W_curr, Vec& weights_prev) { // TO-DO - fix issue with inner product
+	pair<float, float> linear_backwards(Vec & dZ, Vec & W_curr, Vec & weights_prev) { // TO-DO - fix issue with inner product
 		auto m = weights_prev.size();
 	    float(dW) = (1 / m) * inner_product(dZ.begin(), dZ.end(), weights_prev.begin(), 0.0);
 		for (auto x : W_curr) { // for debugging purposes
@@ -201,7 +201,7 @@ public:
 	}
 	
 
-	pair<Vec, Vec> linear_backwards(float dZ, Vec& W_curr, Vec& weights_prev) { // TO-DO - fix issue with inner product
+	pair<Vec, Vec> linear_backwards(float dZ, Vec & W_curr, Vec & weights_prev) { // TO-DO - fix issue with inner product
 		auto m = weights_prev.size();
 		Vec dW, dA_prev;
 		transform(weights_prev.begin(), weights_prev.end(), back_inserter(dW), [&dZ, &m](auto& c) {return (1 / m)*(c)*(dZ - c); });
@@ -210,7 +210,7 @@ public:
 	}
 
 
-	/*pair<Visitor, Visitor> linear_activation_backwards_variant(Vec& dA, Vec& W_curr, myvariant& Z_curr, Vec& A_prev, string activation_function = "relu") {
+	/*pair<Visitor, Visitor> linear_activation_backwards_variant(Vec & dA, Vec & W_curr, myvariant & Z_curr, Vec & A_prev, string activation_function = "relu") {
 		myvariant da_prev = 0.0f;
 		myvariant dW = Vec{};
 		visit(Visitor(), da_prev);
@@ -231,7 +231,7 @@ public:
 	}*/
 
 
-	pair<float, float> linear_activation_backwards(Vec& dA, Vec& W_curr, Vec& Z_curr, Vec& A_prev, string activation_function = "relu") { // for classification
+	pair<float, float> linear_activation_backwards(Vec & dA, Vec & W_curr, Vec & Z_curr, Vec & A_prev, string activation_function = "relu") { // for classification
 		float da_prev; 
 		float dW;
 		if (activation_function == "relu") {
@@ -247,7 +247,7 @@ public:
 	}
 
 
-	pair<Vec, Vec> linear_activation_backwards(Vec& dA, Vec& W_curr, float& Z_curr, Vec& A_prev, string activation_function = "sigmoid") { // overloaded function for regression
+	pair<Vec, Vec> linear_activation_backwards(Vec & dA, Vec & W_curr, float & Z_curr, Vec & A_prev, string activation_function = "sigmoid") { // overloaded function for regression
 	Vec da_prev, dW;
 	if (activation_function == "sigmoid") {
 		auto dZ = this->sigmoid_gradient(Z_curr);
