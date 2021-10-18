@@ -61,23 +61,23 @@ public:
 
 	container forward_propagation(Vec& training_data) {
 
-		Vec Z1, W1, Z2, W2;
-
+		Vec Z1, Z2;
+		vector<vector<float>> W1, W2;
+		//Z1.emplace_back(double_dot(this->hidden_nodes, training_data));
 		for (unsigned int i = 0; i < this->hidden_nodes.size(); i++) {
-			//Z1.emplace_back(double_dot_product(this->hidden_nodes, training_data));
 			Z1.emplace_back(static_cast<float>(inner_product(training_data.begin(), training_data.end(), begin(this->hidden_nodes[i].weights), 0.0)));
-			for (unsigned int j = 0; j < this->hidden_nodes[0].sz; j++) {
-				W1.emplace_back(this->hidden_nodes[i].weights[j]);
+			//for (unsigned int j = 0; j < this->hidden_nodes[0].sz; j++) {
+			W1.emplace_back(this->hidden_nodes[i].weights);
 			}
-		}
+		//}
 
 		auto A1 = this->relu_it(Z1);
 		for (unsigned int i = 0; i < this->final_nodes.size(); i++) {
 			Z2.emplace_back(static_cast<float>(inner_product(A1.begin(), A1.end(), begin(this->final_nodes[i].weights), 0.0)));
-			for (unsigned int j = 0; j < this->final_nodes[0].sz; j++) {
-				W2.emplace_back(this->final_nodes[i].weights[j]);
+			//for (unsigned int j = 0; j < this->final_nodes[0].sz; j++) {
+			W2.emplace_back(this->final_nodes[i].weights);
 			}
-		}
+		//}
 		Vec A2 = this->softmaxoverflow(Z2);
 		container cnt{ W1, W2, A1, A2, Z1, Z2 };
 		return cnt;
@@ -186,28 +186,35 @@ public:
 		return b;
 	}
 
-
-	pair<float, float> linear_backwards(Vec & dZ, Vec & W_curr, Vec & weights_prev) { // TO-DO - fix issue with inner product
+	pair<float, float> linear_backwards(Vec & dZ, vector<vector<float>> & W_curr, Vec & weights_prev) { // TO-DO - fix issue with inner product
 		auto m = weights_prev.size();
-		float(dW) = (1 / m) * inner_product(dZ.begin(), dZ.end(), weights_prev.begin(), 0.0);
-		for (auto x : W_curr) { // for debugging purposes
-			cout << "w_curr" << x << endl;
-		}
+		float dA_prev = 0.0f;
+		float(dW) = inner_product(dZ.begin(), dZ.end(), weights_prev.begin(), 0.0);
 		for (auto x : dZ) { // for debugging purposes
-			cout << "dz" << x << endl;
+			cout << "dZ" << x << endl;
 		}
-		float(dA_prev) = inner_product(W_curr.begin(), W_curr.end(), dZ.begin(), 0.0);
+		for (auto i = 0; i < W_curr.size(); i++) {
+			for (auto j = 0; j < W_curr[0].size(); j++) {
+				for (auto k = 0; k < dZ.size(); k++) {
+					dA_prev += W_curr[i][j] * dZ[k];
+				}
+				//float(dA_prev) += inner_product(W_curr[i].begin(), W_curr[i].end(), dZ.begin(), 0.0);
+			}
+		}
+		//float(dA_prev) = matmul_no_bias(W_curr, dZ);
+		//float(dA_prev) = inner_product(W_curr.begin(), W_curr.end(), dZ.begin(), 0.0);
 		return make_pair(dA_prev, dW);
 	}
-	
 
-	pair<Vec, Vec> linear_backwards(float dZ, Vec & W_curr, Vec & weights_prev) { // TO-DO - fix issue with inner product
+	
+	/*pair<Vec, Vec> linear_backwards(float dZ, vector<vector<float>> & W_curr, Vec & weights_prev) { // TO-DO - fix issue with inner product
 		auto m = weights_prev.size();
 		Vec dW, dA_prev;
 		transform(weights_prev.begin(), weights_prev.end(), back_inserter(dW), [&dZ, &m](auto& c) {return (1 / m)*(c)*(dZ - c); });
 		transform(W_curr.begin(), W_curr.end(), back_inserter(dA_prev), [&dZ](auto& c) {return (c)*(dZ - c); });
 		return make_pair(dA_prev, dW);
-	}
+	}*/
+
 
 
 	/*pair<Visitor, Visitor> linear_activation_backwards_variant(Vec & dA, Vec & W_curr, myvariant & Z_curr, Vec & A_prev, string activation_function = "relu") {
@@ -231,7 +238,7 @@ public:
 	}*/
 
 
-	pair<float, float> linear_activation_backwards(Vec & dA, Vec & W_curr, Vec & Z_curr, Vec & A_prev, string activation_function = "relu") { // for classification
+	pair<float, float> linear_activation_backwards(Vec & dA, vector<vector<float>> & W_curr, Vec & Z_curr, Vec & A_prev, string activation_function = "relu") { // for classification
 		float da_prev; 
 		float dW;
 		if (activation_function == "relu") {
@@ -247,7 +254,7 @@ public:
 	}
 
 
-	pair<Vec, Vec> linear_activation_backwards(Vec & dA, Vec & W_curr, float & Z_curr, Vec & A_prev, string activation_function = "sigmoid") { // overloaded function for regression
+	/*pair<Vec, Vec> linear_activation_backwards(Vec & dA, vector<vector<float>> & W_curr, float & Z_curr, Vec & A_prev, string activation_function = "sigmoid") { // overloaded function for regression
 	Vec da_prev, dW;
 	if (activation_function == "sigmoid") {
 		auto dZ = this->sigmoid_gradient(Z_curr);
@@ -255,10 +262,10 @@ public:
 	}
 	else { throw runtime_error("this function is only used for regression."); }
 	return make_pair(da_prev, dW);
-}
+}*/
 
 
-	Vec backwards_propagation(Vec & Y_hat, Vec & actual, Vec & training_data, container& ctr) {
+	Vec backwards_propagation(Vec & Y_hat, Vec & actual, Vec & training_data, container & ctr) {
 		Vec grads, result1, result2, dA_prev;
 		float myconstant{1};
 		transform(begin(Y_hat), Y_hat.end(), begin(actual),
@@ -349,10 +356,11 @@ int main() {
 	mynet.generate_weights(newnode);
 	cout <<  "random node " << newnode << endl;
 	getchar();
-	/*Vec grads = mynet.backwards_propagation(classes, y_hat, random_sample, ctr); // backprop needs some more work
+	Vec grads = mynet.backwards_propagation(classes, y_hat, random_sample, ctr); // backprop needs some more work
 	for (auto &u : grads) {
 		cout << "grads" << endl;
-	}*/
+	}
+
 
 	return 0;
 }

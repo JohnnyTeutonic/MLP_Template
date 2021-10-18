@@ -62,8 +62,9 @@ struct inputNode { // holds nodes for the input layer
 
 struct container { // contains the output from forward prop and is carried forward for backprop
 	container() = default;
-	container(Vec t, Vec u, Vec v, Vec w, Vec x, Vec z) : W1(t), W2(u), A1(v), A2(w), Z1(x), Z2(z) {};
-	Vec W1, W2, A1, A2, Z1, Z2;
+	container(vector<vector<float>> t, vector<vector<float>> u, Vec v, Vec w, Vec x, Vec z) : W1(t), W2(u), A1(v), A2(w), Z1(x), Z2(z) {};
+	Vec A1, A2, Z1, Z2;
+	vector<vector<float>> W1, W2;
 };
 
 struct Visitor // for use with std::variant
@@ -104,6 +105,18 @@ auto linear_forward(vector<T> prev, vector<T> next, int index) {
 	return inner_product(begin(prev[index].weights), end(prev[index].weights), begin(next[index].weights), 0.0);
 }
 
+Vec double_dot(const vector<Node> & W, const Vec & x) { // matrix-vector product - results in a vector
+	Vec z(W.size(), 0.0);
+	for (unsigned int i = 0; i < W.size(); ++i) {
+		for (unsigned int j = 0; j < W[0].weights.size(); ++j) {
+			z[i] += W[i].weights[j] * x[j];
+		}
+	}
+	return z;
+}
+
+
+
 Vec matmul(const vector<Node> & W, const Vec & x, const Vec & b) { // matrix-vector product - results in a vector
 	Vec z(W.size(), 0.0);
 	for (unsigned int i = 0; i < W.size(); ++i) {
@@ -114,3 +127,15 @@ Vec matmul(const vector<Node> & W, const Vec & x, const Vec & b) { // matrix-vec
 	}
 	return z;
 }
+
+float matmul_no_bias(const Vec & W, const Vec & x) { // matrix-vector without bias term product - results in a vector
+	//Vec z(W.size(), 0.0);
+	float z = 0.0f;
+	for (unsigned int i = 0; i < W.size(); ++i) {
+		for (unsigned int j = 0; j < x.size(); ++j) {
+			z += W[j] * x[j];
+		}
+	}
+	return z;
+}
+
