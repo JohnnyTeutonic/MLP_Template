@@ -217,6 +217,38 @@ public:
 
 
 
+	pair<float, float> linear_backwards(Vec & dZ, vector<vector<float>> & W_curr, Vec & weights_prev) { // TO-DO - fix issue with inner product
+		auto m = weights_prev.size();
+		float dA_prev = 0.0f;
+		float(dW) = inner_product(dZ.begin(), dZ.end(), weights_prev.begin(), 0.0);
+		for (auto x : dZ) { // for debugging purposes
+			cout << "dZ" << x << endl;
+		}
+		for (auto i = 0; i < W_curr.size(); i++) {
+			for (auto j = 0; j < W_curr[0].size(); j++) {
+				for (auto k = 0; k < dZ.size(); k++) {
+					dA_prev += W_curr[i][j] * dZ[k];
+				}
+				//float(dA_prev) += inner_product(W_curr[i].begin(), W_curr[i].end(), dZ.begin(), 0.0);
+			}
+		}
+		//float(dA_prev) = matmul_no_bias(W_curr, dZ);
+		//float(dA_prev) = inner_product(W_curr.begin(), W_curr.end(), dZ.begin(), 0.0);
+		return make_pair(dA_prev, dW);
+	}
+
+	pair<Vec, Vec> linear_backwards(float dZ, vector<vector<float>> & W_curr, Vec & weights_prev) { // TO-DO - fix issue with inner product
+		auto m = weights_prev.size();
+		Vec dW, dA_prev;
+		//void * dW;
+		//void * dA_prev;
+		transform(weights_prev.begin(), weights_prev.end(), back_inserter(dW), [&dZ, &m](auto& c) {return (1 / m)*(c)*(dZ - c); });
+		transform(W_curr.begin(), W_curr.end(), back_inserter(dA_prev), [&dZ](auto& c) {return (c)*(dZ - c); });
+		return make_pair(dA_prev, dW);
+	}
+
+
+
 	/*pair<Visitor, Visitor> linear_activation_backwards_variant(Vec & dA, Vec & W_curr, myvariant & Z_curr, Vec & A_prev, string activation_function = "relu") {
 		myvariant da_prev = 0.0f;
 		myvariant dW = Vec{};
@@ -238,6 +270,45 @@ public:
 	}*/
 
 
+	pair<myvariant, myvariant> linear_activation_backwards_variant(Vec & dA, vector<vector<float>> & W_curr, void * Z_curr, Vec & A_prev, string activation_function = "relu") {
+	if (activation_function == "relu") {
+		Vec * abc;
+		abc = (Vec *)Z_curr;
+		Vec def;
+		def = *abc;
+		myvariant da_prev = 0.0f;
+		myvariant dW = 0.0f;
+		auto dZ = this->relu_gradient(dA, def);
+		tie(da_prev, dW) = this->linear_backwards(dZ, W_curr, A_prev);
+		return make_pair(da_prev, dW);
+	}
+	else if (activation_function == "sigmoid") {
+		float * abc;
+		abc = (float *)Z_curr;
+		float def;
+		def = *abc;
+		myvariant da_prev = Vec{};
+		myvariant dW = Vec{};
+		auto dZ = this->sigmoid_gradient(def);
+		tie(da_prev, dW) = this->linear_backwards(dZ, W_curr, A_prev);
+		return make_pair(da_prev, dW);
+	}
+
+	else if (activation_function == "softmax") {
+		Vec * abc;
+		abc = (Vec *)Z_curr;
+		Vec def;
+		def = *abc;
+		auto dZ = this->softmax_gradient(def);
+		myvariant da_prev = 0.0f;
+		myvariant dW = 0.0f;
+		tie(da_prev, dW) = this->linear_backwards(dZ, W_curr, A_prev);
+		return make_pair(da_prev, dW);
+	}
+}
+
+
+
 	pair<float, float> linear_activation_backwards(Vec & dA, vector<vector<float>> & W_curr, Vec & Z_curr, Vec & A_prev, string activation_function = "relu") { // for classification
 		float da_prev; 
 		float dW;
@@ -254,7 +325,7 @@ public:
 	}
 
 
-	/*pair<Vec, Vec> linear_activation_backwards(Vec & dA, vector<vector<float>> & W_curr, float & Z_curr, Vec & A_prev, string activation_function = "sigmoid") { // overloaded function for regression
+	pair<Vec, Vec> linear_activation_backwards(Vec & dA, vector<vector<float>> & W_curr, float & Z_curr, Vec & A_prev, string activation_function = "sigmoid") { // overloaded function for regression
 	Vec da_prev, dW;
 	if (activation_function == "sigmoid") {
 		auto dZ = this->sigmoid_gradient(Z_curr);
@@ -262,7 +333,7 @@ public:
 	}
 	else { throw runtime_error("this function is only used for regression."); }
 	return make_pair(da_prev, dW);
-}*/
+}
 
 
 	Vec backwards_propagation(Vec & Y_hat, Vec & actual, Vec & training_data, container & ctr) {
