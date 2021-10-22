@@ -2,19 +2,19 @@
 
 class MLP {
 public:
-	explicit MLP(unsigned int ilz, unsigned int nc, unsigned int n_hidden_nodes, unsigned int n_hl, float lr, unsigned int n_iter) {
+	explicit MLP(unsigned int ilz, unsigned int nc, unsigned int n_hidden_nodes, unsigned int n_hl, double lr, unsigned int n_iter) {
 		input_layer_size = ilz, n_classes = nc, hidden_node_size = n_hidden_nodes, no_hidden_layers = n_hl,
-			learning_rate_sanity_check(lr) ? learning_rate = lr : learning_rate = 0.1f;  weight_size = ilz + 1, weight_size_final = n_hidden_nodes + 1, no_iterations = n_iter;
+			learning_rate_sanity_check(lr) ? learning_rate = lr : learning_rate = 0.1;  weight_size = ilz + 1, weight_size_final = n_hidden_nodes + 1, no_iterations = n_iter;
 	};
 
 	~MLP() {};
 	unsigned int input_layer_size, weight_size_final, n_classes, weight_size, hidden_node_size, no_iterations, no_hidden_layers;
 	typedef vector<vector<Node>> layer;
-	float learning_rate;
+	double learning_rate;
 	vector<inputNode> initial_nodes;
 	vector<Node> hidden_nodes, final_nodes;
-	bool constexpr learning_rate_sanity_check(float range) {
-		if (IsInBounds(range, 0.0f, 1.0f)) {
+	bool constexpr learning_rate_sanity_check(double range) {
+		if (IsInBounds(range, 0.0, 1.0)) {
 			return true;
 		};
 		return false;
@@ -22,7 +22,7 @@ public:
 	void enter_training_data(Vec data) {
 		auto n_nodes = data.size();
 		for (unsigned int i = 0; i < n_nodes; i++) {
-			inputNode curnode{ float(data.at(i)) };
+			inputNode curnode{ double(data.at(i)) };
 			this->initial_nodes.push_back(curnode);
 		}
 	}
@@ -50,7 +50,7 @@ public:
 		if (n.weights.size() == 0) {
 			throw runtime_error("weights not initialised");
 		}
-		generate(n.weights.begin(), n.weights.end(), [&]() {return 0.1f * static_cast <float> (rand()) / static_cast <float> (RAND_MAX); });
+		generate(n.weights.begin(), n.weights.end(), [&]() {return 0.1f * static_cast <double> (rand()) / static_cast <double> (RAND_MAX); });
 	}
 
 	void initialise_parameters() {
@@ -62,10 +62,10 @@ public:
 	container forward_propagation(Vec& training_data) {
 
 		Vec Z1, Z2;
-		vector<vector<float>> W1, W2;
+		vector<vector<double>> W1, W2;
 		//Z1.emplace_back(double_dot(this->hidden_nodes, training_data));
 		for (unsigned int i = 0; i < this->hidden_nodes.size(); i++) {
-			Z1.emplace_back(static_cast<float>(inner_product(training_data.begin(), training_data.end(), begin(this->hidden_nodes[i].weights), 0.0)));
+			Z1.emplace_back(static_cast<double>(inner_product(training_data.begin(), training_data.end(), begin(this->hidden_nodes[i].weights), 0.0)));
 			//for (unsigned int j = 0; j < this->hidden_nodes[0].sz; j++) {
 			W1.emplace_back(this->hidden_nodes[i].weights);
 			}
@@ -73,7 +73,7 @@ public:
 
 		auto A1 = this->relu_it(Z1);
 		for (unsigned int i = 0; i < this->final_nodes.size(); i++) {
-			Z2.emplace_back(static_cast<float>(inner_product(A1.begin(), A1.end(), begin(this->final_nodes[i].weights), 0.0)));
+			Z2.emplace_back(static_cast<double>(inner_product(A1.begin(), A1.end(), begin(this->final_nodes[i].weights), 0.0)));
 			//for (unsigned int j = 0; j < this->final_nodes[0].sz; j++) {
 			W2.emplace_back(this->final_nodes[i].weights);
 			}
@@ -99,24 +99,46 @@ public:
 		int argmaxVal = distance(probs.begin(), result);
 		int selected_class = probs[argmaxVal];
 		Vec one_hot_classes(probs.size());
-		fill(one_hot_classes.begin(), one_hot_classes.end(), 0.0f);
-		one_hot_classes[selected_class] = 1.0f;
+		fill(one_hot_classes.begin(), one_hot_classes.end(), 0.0);
+		one_hot_classes[selected_class] = 1.0;
 		return one_hot_classes;
 	}
 
-	float relu(float val) {
-		return val < 0.0f ? 0.0f : val;
+	double relu(double val) {
+		return val < 0.0 ? 0.0 : val;
 	}
 
-	float sigmoid(float x) { // will eventually be used for regression in final layer or as an alternative activation layer for hidden layers
-		return exp(x) / (exp(x) + 1.0f);
+	double MLP::sigmoid(const double z) {
+		double sigma;
+		if (z > 0.0) {
+			sigma = 1.0 / (1.0 + exp(-z));
+		}
+		else {
+			sigma = exp(z) / (1.0 + exp(z));
+		}
+		return sigma * (1.0 - sigma);
 	}
 
 
-	float loss_function_cross_entropy(Vec & p, Vec & q, float epsilon=1e-8) { // p is ground truth, q is softmax/sigmoid predictions from forward prop
+	Vec MLP::sigmoid_iter(const Vec& z) {
+		Vec x(z.size());
+		for (unsigned int i = 0; i < z.size(); ++i) {
+			if (z[i] > 0.0) {
+				x[i] = 1.0 / (1.0 + std::exp(-z[i]));
+			}
+			else {
+				x[i] = std::exp(z[i]) / (1.0 + std::exp(z[i]));
+			}
+		}
+		return x;
+	}
+
+
+
+	double loss_function_cross_entropy(Vec & p, Vec & q, double epsilon=1e-8) { // p is ground truth, q is softmax/sigmoid predictions from forward prop
 		Vec loss_vec;
-		transform(p.begin(), p.end(), q.begin(), back_inserter(loss_vec), [&](float x, float y) {return x * log( y+ epsilon); });
-		float loss = accumulate(loss_vec.begin(), loss_vec.end(), 0.0f);
+		transform(p.begin(), p.end(), q.begin(), back_inserter(loss_vec), [&](double x, double y) {return x * log( y+ epsilon); });
+		double loss = accumulate(loss_vec.begin(), loss_vec.end(), 0.0f);
 		return -loss;
 	}
 
@@ -133,13 +155,13 @@ public:
 
 	Vec softmaxoverflow(Vec & weights) {
 		Vec secondweights, sum;
-		float max = *max_element(weights.begin(), weights.end()); // use the max value to handle overflow issues
+		double max = *max_element(weights.begin(), weights.end()); // use the max value to handle overflow issues
 
 		for (unsigned int i = 0; i < weights.size(); i++) {
 			sum.emplace_back(exp(weights[i] - max));
 		}
 
-		float norm2 = accumulate(sum.begin(), sum.end(), 0.0);
+		double norm2 = accumulate(sum.begin(), sum.end(), 0.0);
 
 		for (unsigned int i = 0; i < weights.size(); i++) {
 			secondweights.emplace_back(exp(weights[i] - max) / norm2);
@@ -151,7 +173,7 @@ public:
 		Vec derivativeWeights;
 		Vec act = this->softmaxoverflow(weights);
 		for (int i = 0; i < act.size(); i++) {
-			derivativeWeights.emplace_back(act[i] * (1.f - act[i]));
+			derivativeWeights.emplace_back(act[i] * (1.0 - act[i]));
 		}
 		return derivativeWeights;
 	}
@@ -163,8 +185,8 @@ public:
 		return To();
 	}
 
-	float sigmoid_gradient(float output) {
-		return (output * (1.f - output));
+	double sigmoid_gradient(double output) {
+		return (output * (1.0 - output));
 	}
 
 	Vec relu_gradient(Vec & dA, Vec & Z) {
@@ -178,36 +200,16 @@ public:
 	Vec setToZero(Vec & a) {
 		Vec b;
 		for (auto i = a.begin(); i != a.end(); i++) {
-			if (*i < 0.0f) {
-				b.emplace_back(0.0f);
+			if (*i < 0.00) {
+				b.emplace_back(0.00);
 			}
 			else { b.emplace_back(*i); }
 		}
 		return b;
 	}
 
-	pair<float, float> linear_backwards(Vec & dZ, vector<vector<float>> & W_curr, Vec & weights_prev) { // TO-DO - fix issue with inner product
-		auto m = weights_prev.size();
-		float dA_prev = 0.0f;
-		float(dW) = inner_product(dZ.begin(), dZ.end(), weights_prev.begin(), 0.0);
-		for (auto x : dZ) { // for debugging purposes
-			cout << "dZ" << x << endl;
-		}
-		for (auto i = 0; i < W_curr.size(); i++) {
-			for (auto j = 0; j < W_curr[0].size(); j++) {
-				for (auto k = 0; k < dZ.size(); k++) {
-					dA_prev += W_curr[i][j] * dZ[k];
-				}
-				//float(dA_prev) += inner_product(W_curr[i].begin(), W_curr[i].end(), dZ.begin(), 0.0);
-			}
-		}
-		//float(dA_prev) = matmul_no_bias(W_curr, dZ);
-		//float(dA_prev) = inner_product(W_curr.begin(), W_curr.end(), dZ.begin(), 0.0);
-		return make_pair(dA_prev, dW);
-	}
-
 	
-	/*pair<Vec, Vec> linear_backwards(float dZ, vector<vector<float>> & W_curr, Vec & weights_prev) { // TO-DO - fix issue with inner product
+	/*pair<Vec, Vec> linear_backwards(double dZ, vector<vector<double>> & W_curr, Vec & weights_prev) { // TO-DO - fix issue with inner product
 		auto m = weights_prev.size();
 		Vec dW, dA_prev;
 		transform(weights_prev.begin(), weights_prev.end(), back_inserter(dW), [&dZ, &m](auto& c) {return (1 / m)*(c)*(dZ - c); });
@@ -217,10 +219,10 @@ public:
 
 
 
-	pair<float, float> linear_backwards(Vec & dZ, vector<vector<float>> & W_curr, Vec & weights_prev) { // TO-DO - fix issue with inner product
+	pair<double, double> linear_backwards(Vec & dZ, vector<vector<double>> & W_curr, Vec & weights_prev) { // TO-DO - fix issue with inner product
 		auto m = weights_prev.size();
-		float dA_prev = 0.0f;
-		float(dW) = inner_product(dZ.begin(), dZ.end(), weights_prev.begin(), 0.0);
+		double dA_prev = 0.0;
+		double(dW) = inner_product(dZ.begin(), dZ.end(), weights_prev.begin(), 0.0);
 		for (auto x : dZ) { // for debugging purposes
 			cout << "dZ" << x << endl;
 		}
@@ -229,22 +231,30 @@ public:
 				for (auto k = 0; k < dZ.size(); k++) {
 					dA_prev += W_curr[i][j] * dZ[k];
 				}
-				//float(dA_prev) += inner_product(W_curr[i].begin(), W_curr[i].end(), dZ.begin(), 0.0);
+				//double(dA_prev) += inner_product(W_curr[i].begin(), W_curr[i].end(), dZ.begin(), 0.0);
 			}
 		}
-		//float(dA_prev) = matmul_no_bias(W_curr, dZ);
-		//float(dA_prev) = inner_product(W_curr.begin(), W_curr.end(), dZ.begin(), 0.0);
+		//double(dA_prev) = matmul_no_bias(W_curr, dZ);
+		//double(dA_prev) = inner_product(W_curr.begin(), W_curr.end(), dZ.begin(), 0.0);
 		return make_pair(dA_prev, dW);
 	}
 
-	pair<Vec, Vec> linear_backwards(float dZ, vector<vector<float>> & W_curr, Vec & weights_prev) { // TO-DO - fix issue with inner product
+	pair<vector<vector<double>>, Vec> linear_backwards(double dZ, vector<vector<double>> & W_curr, Vec & weights_prev) { // TO-DO - fix issue with inner product
 		auto m = weights_prev.size();
-		Vec dW, dA_prev;
+		Vec dW;
+		vector<vector<double>> dA_prev;
 		//void * dW;
 		//void * dA_prev;
-		transform(weights_prev.begin(), weights_prev.end(), back_inserter(dW), [&dZ, &m](auto& c) {return (1 / m)*(c)*(dZ - c); });
-		transform(W_curr.begin(), W_curr.end(), back_inserter(dA_prev), [&dZ](auto& c) {return (c)*(dZ - c); });
-		return make_pair(dA_prev, dW);
+		transform(weights_prev.begin(), weights_prev.end(), back_inserter(dW), [&dZ](auto& c) {return (c)*(dZ - c); });
+		Vec dW2 = dW;
+		for (auto i = 0; i < dW.size(); i++) {
+			dW2.emplace_back((1 / m)*dW[i]);
+		}
+		for (auto i = 0; i < W_curr.size(); i++) {
+			
+			transform(W_curr[i].begin(), W_curr[i].end(), back_inserter(dA_prev[i]), [&dZ](auto& c) {return (c)*(dZ - c); });
+		}
+		return make_pair(dA_prev, dW2);
 	}
 
 
@@ -258,7 +268,7 @@ public:
 			tie(da_prev, dW) = this->linear_backwards(dZ, W_curr, A_prev);
 		}
 		else if (activation_function == "sigmoid") {
-			auto dZ = this->sigmoid_gradient(get<float>(Z_curr));
+			auto dZ = this->sigmoid_gradient(get<double>(Z_curr));
 			tie(da_prev, dW) = this->linear_backwards(dZ, W_curr, A_prev);
 		}
 
@@ -270,26 +280,27 @@ public:
 	}*/
 
 
-	pair<myvariant, myvariant> linear_activation_backwards_variant(Vec & dA, vector<vector<float>> & W_curr, void * Z_curr, Vec & A_prev, string activation_function = "relu") {
+	pair<myvariant, myvariant> linear_activation_backwards_variant(Vec & dA, vector<vector<double>> & W_curr, void * Z_curr, Vec & A_prev, string activation_function = "relu") {
 	if (activation_function == "relu") {
 		Vec * abc;
 		abc = (Vec *)Z_curr;
 		Vec def;
 		def = *abc;
-		myvariant da_prev = 0.0f;
-		myvariant dW = 0.0f;
+		myvariant da_prev = 0.00;
+		myvariant dW = 0.00;
 		auto dZ = this->relu_gradient(dA, def);
 		tie(da_prev, dW) = this->linear_backwards(dZ, W_curr, A_prev);
 		return make_pair(da_prev, dW);
 	}
 	else if (activation_function == "sigmoid") {
-		float * abc;
-		abc = (float *)Z_curr;
-		float def;
+		Vec * abc;
+		abc = (Vec *)Z_curr;
+		Vec def;
 		def = *abc;
 		myvariant da_prev = Vec{};
 		myvariant dW = Vec{};
-		auto dZ = this->sigmoid_gradient(def);
+		//auto dZ = this->sigmoid_gradient(def);
+		auto dZ = this->sigmoid_iter(def);
 		tie(da_prev, dW) = this->linear_backwards(dZ, W_curr, A_prev);
 		return make_pair(da_prev, dW);
 	}
@@ -300,8 +311,8 @@ public:
 		Vec def;
 		def = *abc;
 		auto dZ = this->softmax_gradient(def);
-		myvariant da_prev = 0.0f;
-		myvariant dW = 0.0f;
+		myvariant da_prev = 0.00;
+		myvariant dW = 0.00;
 		tie(da_prev, dW) = this->linear_backwards(dZ, W_curr, A_prev);
 		return make_pair(da_prev, dW);
 	}
@@ -309,9 +320,9 @@ public:
 
 
 
-	pair<float, float> linear_activation_backwards(Vec & dA, vector<vector<float>> & W_curr, Vec & Z_curr, Vec & A_prev, string activation_function = "relu") { // for classification
-		float da_prev; 
-		float dW;
+	pair<double, double> linear_activation_backwards(Vec & dA, vector<vector<double>> & W_curr, Vec & Z_curr, Vec & A_prev, string activation_function = "relu") { // for classification
+		double da_prev; 
+		double dW;
 		if (activation_function == "relu") {
 			auto dZ = this->relu_gradient(dA, Z_curr);
 			tie(da_prev, dW) = this->linear_backwards(dZ, W_curr, A_prev);
@@ -325,8 +336,9 @@ public:
 	}
 
 
-	pair<Vec, Vec> linear_activation_backwards(Vec & dA, vector<vector<float>> & W_curr, float & Z_curr, Vec & A_prev, string activation_function = "sigmoid") { // overloaded function for regression
-	Vec da_prev, dW;
+	pair<Vec, vector<vector<double>>> linear_activation_backwards(Vec & dA, vector<vector<double>> & W_curr, double & Z_curr, Vec & A_prev, string activation_function = "sigmoid") { // overloaded function for regression
+	Vec da_prev;
+	vector<vector<double>> dW;
 	if (activation_function == "sigmoid") {
 		auto dZ = this->sigmoid_gradient(Z_curr);
 		tie(da_prev, dW) = this->linear_backwards(dZ, W_curr, A_prev);
@@ -338,15 +350,15 @@ public:
 
 	Vec backwards_propagation(Vec & Y_hat, Vec & actual, Vec & training_data, container & ctr) {
 		Vec grads, result1, result2, dA_prev;
-		float myconstant{1};
+		double myconstant{1};
 		transform(begin(Y_hat), Y_hat.end(), begin(actual),
-			back_inserter(result1), [](float x, float y) {return x - y; });
+			back_inserter(result1), [](double x, double y) {return x - y; });
 		transform(Y_hat.begin(), Y_hat.end(), back_inserter(result2), [&myconstant](auto& c) {return (c)*(myconstant - c); });
 		transform(result1.begin(), result1.end(), result2.begin(),
 			back_inserter(dA_prev), divides<>{});
 		for (unsigned int i = 0; i < 2; i++) { // this implementation only has a single hidden layer for now
 			auto dA_curr = dA_prev;
-			float dA_prev, dW_prev;
+			double dA_prev, dW_prev;
 			if (i==0){
 				tie(dA_prev, dW_prev) = this->linear_activation_backwards(dA_curr, ctr.W2, ctr.Z2, ctr.A2, "softmax");}
 			else {
@@ -369,7 +381,7 @@ public:
 		return false;
 	}
 
-	void update_parameters(Vec & grads, const float learning_rate, vector<Node> & hidden_nodes) { // TO-DO - check this function works as expected. Might require loop fixes.
+	void update_parameters(Vec & grads, const double learning_rate, vector<Node> & hidden_nodes) { // TO-DO - check this function works as expected. Might require loop fixes.
 		unsigned int grads_size = grads.size();
 		//vector<Node> update_nodes;
 		//transform(hidden_nodes[i].weights.begin(), hidden_nodes[i].weights.end(), update_nodes[i].weights.begin(), [learning_rate, grads, i] { learning_rate - grads[i]; });
@@ -388,7 +400,7 @@ public:
 		for (auto i = 0; i < this->no_iterations; i++) {
 			container ctr{this->forward_propagation(training_data)};
 			Vec y_hat = this->convert_probs_to_class(ctr.A2);
-			float cost = this->loss_function_cross_entropy(target, y_hat);
+			double cost = this->loss_function_cross_entropy(target, y_hat);
 			bool accuracy = this->get_accuracy_value(y_hat, target);
 			Vec grads = this->backwards_propagation(y_hat, training_data, target, ctr);
 			this->update_parameters(grads, this->learning_rate, this->hidden_nodes);
@@ -411,10 +423,10 @@ int main() {
 	cout << "final layer weights is " << mynet.weight_size_final << endl;
 	cout << "learning rate is " << mynet.learning_rate << endl;
 	mynet.initialise_parameters();	
-	Vec classes = { 0.0f, 1.0f, 0.0f }; // one-hot encoded - using floats for now but will change to ints in a future implementation
+	Vec classes = { 0.0, 1.0, 0.0 }; // one-hot encoded - using doubles for now but will change to ints in a future implementation
 	Vec random_sample(mynet.input_layer_size);
-	random_sample.emplace_back(0.0f);
-	generate(random_sample.begin(), random_sample.end(), [&]() {return static_cast <float> (rand() % 5); });
+	random_sample.emplace_back(0.0);
+	generate(random_sample.begin(), random_sample.end(), [&]() {return static_cast <double> (rand() % 5); });
 	for (auto& u : random_sample) {
 		cout << "sample " << u << endl;
 	}
