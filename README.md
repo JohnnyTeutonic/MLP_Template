@@ -1,7 +1,7 @@
 # MLP_Template
 Experiment with creating an MLP from scratch in C++
 ## WIP
-- currently supports only a single hidden layer
-- suports both classification and regression
+- supports multiple hidden layers
+- suports both classification and regression using softmax outputs or sigmoid outputs depending on the task
 ## Requirements
 - C++ 17
