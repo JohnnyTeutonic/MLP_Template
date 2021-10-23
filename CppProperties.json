@@ -4,14 +4,14 @@
       "inheritEnvironments": [
         "msvc_x64"
       ],
-      "name": "x64-Release",
+      "name": "x64-Debug",
       "includePath": [
         "${env.INCLUDE}",
         "${workspaceRoot}\\**"
       ],
       "defines": [
         "WIN32",
-        "NDEBUG",
+        "_DEBUG",
         "UNICODE",
         "_UNICODE"
       ],

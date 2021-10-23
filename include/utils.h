@@ -14,15 +14,15 @@
 #include <cstdlib>
 using namespace std;
 
-using Vec = vector<float>;
-using myvariant = variant<float, Vec>;
+using Vec = vector<double>;
+using myvariant = variant<double, Vec>;
 template <typename It> // template for softmax activation function for different types of iterators
 void softmax(It beg, It end)
 {
 	using VType = typename iterator_traits<It>::value_type;
 
-	static_assert(is_floating_point<VType>::value,
-		"Softmax function only applicable for floating point types");
+	static_assert(is_doubleing_point<VType>::value,
+		"Softmax function only applicable for doubleing point types");
 
 	auto max_ele{ *max_element(beg, end) };
 
@@ -35,6 +35,7 @@ void softmax(It beg, It end)
 
 struct Node { // holds nodes for the hidden layers and the final layer
 	Node() = default;
+	~Node() = default;
 	explicit Node(unsigned int size) : weights(size) { sz = size; };
 	Node(const Node& copynode) : weights(copynode.weights) { sz = copynode.sz; };
 	unsigned int sz;
@@ -53,8 +54,9 @@ struct Node { // holds nodes for the hidden layers and the final layer
 };
 
 struct inputNode { // holds nodes for the input layer
-	inputNode(float val) : value(val) {};
-	float value;
+	inputNode(double val) : value(val) {};
+	~inputNode() = default;
+	double value;
 	friend ostream& operator <<(ostream& os, const inputNode nd) {
 		return os << "[" << nd.value << "]";
 	}
@@ -62,8 +64,9 @@ struct inputNode { // holds nodes for the input layer
 
 struct container { // contains the output from forward prop and is carried forward for backprop
 	container() = default;
-	container(Vec t, Vec u, Vec v, Vec w, Vec x, Vec z) : W1(t), W2(u), A1(v), A2(w), Z1(x), Z2(z) {};
-	Vec W1, W2, A1, A2, Z1, Z2;
+	container(vector<vector<double>> t, vector<vector<double>> u, Vec v, Vec w, Vec x, Vec z) : W1(t), W2(u), A1(v), A2(w), Z1(x), Z2(z) {};
+	Vec A1, A2, Z1, Z2;
+	vector<vector<double>> W1, W2;
 };
 
 struct Visitor // for use with std::variant
@@ -85,7 +88,7 @@ bool constexpr IsInBounds(const T& value, const T& low, const T& high) {
 }
 
 
-bool is_float_eq(float a, float b, float epsilon) { // compares floating point values; uses epsilon to ensure the values are approximately equal up to a limit
+bool is_double_eq(double a, double b, double epsilon) { // compares doubleing point values; uses epsilon to ensure the values are approximately equal up to a limit
 	return ((a - b) < epsilon) && ((b - a) < epsilon);
 }
 
@@ -104,6 +107,18 @@ auto linear_forward(vector<T> prev, vector<T> next, int index) {
 	return inner_product(begin(prev[index].weights), end(prev[index].weights), begin(next[index].weights), 0.0);
 }
 
+Vec double_dot(const vector<Node> & W, const Vec & x) { // matrix-vector product - results in a vector
+	Vec z(W.size(), 0.0);
+	for (unsigned int i = 0; i < W.size(); ++i) {
+		for (unsigned int j = 0; j < W[0].weights.size(); ++j) {
+			z[i] += W[i].weights[j] * x[j];
+		}
+	}
+	return z;
+}
+
+
+
 Vec matmul(const vector<Node> & W, const Vec & x, const Vec & b) { // matrix-vector product - results in a vector
 	Vec z(W.size(), 0.0);
 	for (unsigned int i = 0; i < W.size(); ++i) {
@@ -114,3 +129,15 @@ Vec matmul(const vector<Node> & W, const Vec & x, const Vec & b) { // matrix-vec
 	}
 	return z;
 }
+
+double matmul_no_bias(const Vec & W, const Vec & x) { // matrix-vector without bias term product - results in a vector
+	//Vec z(W.size(), 0.0);
+	double z = 0.0f;
+	for (unsigned int i = 0; i < W.size(); ++i) {
+		for (unsigned int j = 0; j < x.size(); ++j) {
+			z += W[j] * x[j];
+		}
+	}
+	return z;
+}
+

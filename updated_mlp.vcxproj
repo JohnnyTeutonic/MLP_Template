@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="crossplatform|Win32">
+      <Configuration>crossplatform</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="crossplatform|x64">
+      <Configuration>crossplatform</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
@@ -20,7 +28,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{4415B6F7-A836-419D-9A4F-53262E02D557}</ProjectGuid>
+    <ProjectGuid>{6D73DAAB-25C0-4250-BF83-EFA436DE59E6}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -42,6 +50,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='crossplatform|Win32'">
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='crossplatform|x64'">
     <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -101,12 +115,27 @@
     <ClCompile>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
+    <Link>
+      <AdditionalOptions>/FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="neuralnetwork.cpp" />
+    <ClCompile Include="src\experimentalnet.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\neuralnetwork.cpp" />
+    <ClCompile Include="src\neural_network_multiclass.cpp" />
+    <ClCompile Include="src\neural_network_updated.cpp" />
+    <ClCompile Include="src\random_index_generator.cpp" />
+    <ClCompile Include="src\random_uniform_generator.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="utils.h" />
+    <ClInclude Include="include\multiclass.hpp" />
+    <ClInclude Include="include\neural_network_multiclass.h" />
+    <ClInclude Include="include\neural_network_updated.hpp" />
+    <ClInclude Include="include\random_index_generator.hpp" />
+    <ClInclude Include="include\random_uniform_generator.hpp" />
+    <ClInclude Include="include\utils.h" />
+    <ClInclude Include="include\utils.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
