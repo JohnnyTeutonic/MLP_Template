@@ -352,3 +352,4 @@ MigrationBackup/
 "*.filters" 
 "*.filters" 
 *.filters 
+"build/" 
