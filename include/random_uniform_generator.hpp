@@ -1,3 +1,4 @@
+#pragma once
 #include <random>
 
 class RandomNumberBetween
@@ -9,3 +10,4 @@ private:
 	std::mt19937 random_engine_;
 	std::uniform_int_distribution<int> distribution_;
 };
+

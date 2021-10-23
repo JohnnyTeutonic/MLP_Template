@@ -8,10 +8,9 @@
 #include <numeric>
 #include <stdlib.h>
 
-#include "data_generator.hpp"
-#include "utils.hpp"
-#include "neural_network_updated.hpp"
-#include "random_index_generator.hpp"
+#include "../include/utils.hpp"
+#include "../include/neural_network_updated.hpp"
+#include "../include/random_index_generator.hpp"
 
 NeuralNetwork::NeuralNetwork(unsigned int _n_inputs,
 	unsigned int _n_hidden_1,

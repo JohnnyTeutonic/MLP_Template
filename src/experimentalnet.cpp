@@ -4,11 +4,11 @@
 #include <functional>
 #include <iostream>
 #include <iterator>
-#include <stdlib.h>
+#include <stdlib.h>	
 #include <vector>
-#include "utils.hpp"
-#include "random_index_generator.hpp"
-#include "multiclass.hpp"
+#include "../include/utils.hpp"
+#include "../include/random_index_generator.hpp"
+#include "../include/multiclass.hpp"
 
 
 experimental::experimental(unsigned int _n_inputs,

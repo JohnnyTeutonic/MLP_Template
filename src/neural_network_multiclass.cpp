@@ -1,4 +1,4 @@
-#include "neural_network_multiclass.h"
+#include "../include/neural_network_multiclass.h"
 #include <cmath>
 #include <vector>
 #include <string>
@@ -9,10 +9,9 @@
 #include <numeric>
 #include <stdlib.h>
 
-#include "data_generator.hpp"
-#include "utils.hpp"
-#include "neural_network_updated.hpp"
-#include "random_index_generator.hpp"
+#include "../include/utils.hpp"
+#include "../include/neural_network_updated.hpp"
+#include "../include/random_index_generator.hpp"
 
 
 neural_network_multiclass::neural_network_multiclass(unsigned int _n_inputs,

@@ -2,7 +2,7 @@
 #include <string>
 #include <iostream>
 #include "random_uniform_generator.cpp"
-#include "multiclass.hpp"
+#include "../include/multiclass.hpp"
 
 
 int main() {

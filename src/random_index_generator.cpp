@@ -1,4 +1,4 @@
-#include "random_index_generator.hpp"
+#include "../include/random_index_generator.hpp"
 
 RandomIndex::RandomIndex(unsigned int size) : size(size) {
 	index.resize(size, 0);

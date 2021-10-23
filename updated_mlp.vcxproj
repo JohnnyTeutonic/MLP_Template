@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{2CD3139C-F292-425F-9FEF-CDF98AC2F49A}</ProjectGuid>
+    <ProjectGuid>{6D73DAAB-25C0-4250-BF83-EFA436DE59E6}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -97,26 +97,23 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-    </ClCompile>
-  </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="data_generator.cpp" />
-    <ClCompile Include="experimentalnet.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="neural_network_updated.cpp" />
-    <ClCompile Include="random_index_generator.cpp" />
-    <ClCompile Include="random_uniform_generator.cpp" />
+    <ClCompile Include="src\experimentalnet.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\neuralnetwork.cpp" />
+    <ClCompile Include="src\neural_network_multiclass.cpp" />
+    <ClCompile Include="src\neural_network_updated.cpp" />
+    <ClCompile Include="src\random_index_generator.cpp" />
+    <ClCompile Include="src\random_uniform_generator.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="data_generator.hpp" />
-    <ClInclude Include="neural_network_multiclass.h" />
-    <ClInclude Include="neural_network_updated.hpp" />
-    <ClInclude Include="random_index_generator.hpp" />
-    <ClInclude Include="random_uniform_generator.hpp" />
-    <ClInclude Include="utils.hpp" />
+    <ClInclude Include="include\multiclass.hpp" />
+    <ClInclude Include="include\neural_network_multiclass.h" />
+    <ClInclude Include="include\neural_network_updated.hpp" />
+    <ClInclude Include="include\random_index_generator.hpp" />
+    <ClInclude Include="include\random_uniform_generator.hpp" />
+    <ClInclude Include="include\utils.h" />
+    <ClInclude Include="include\utils.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
