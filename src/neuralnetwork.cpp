@@ -138,7 +138,7 @@ public:
 	double loss_function_cross_entropy(Vec & p, Vec & q, double epsilon=1e-8) { // p is ground truth, q is softmax/sigmoid predictions from forward prop
 		Vec loss_vec;
 		transform(p.begin(), p.end(), q.begin(), back_inserter(loss_vec), [&](double x, double y) {return x * log( y+ epsilon); });
-		double loss = accumulate(loss_vec.begin(), loss_vec.end(), 0.0f);
+		double loss = accumulate(loss_vec.begin(), loss_vec.end(), 0.0);
 		return -loss;
 	}
 
@@ -336,9 +336,9 @@ public:
 	}
 
 
-	pair<Vec, vector<vector<double>>> linear_activation_backwards(Vec & dA, vector<vector<double>> & W_curr, double & Z_curr, Vec & A_prev, string activation_function = "sigmoid") { // overloaded function for regression
-	Vec da_prev;
-	vector<vector<double>> dW;
+	pair<vector<vector<double>>, Vec> linear_activation_backwards(Vec & dA, vector<vector<double>> & W_curr, double & Z_curr, Vec & A_prev, string activation_function = "sigmoid") { // overloaded function for regression
+	Vec dW;
+	vector<vector<double>> da_prev;
 	if (activation_function == "sigmoid") {
 		auto dZ = this->sigmoid_gradient(Z_curr);
 		tie(da_prev, dW) = this->linear_backwards(dZ, W_curr, A_prev);
@@ -413,7 +413,7 @@ public:
 
 
 
-int main() {
+/*int main() {
 	//##################### CONSTRUCTOR EXPLANATION AND INITIALISATION #####################
 	// Training data is 20 X 1, number of classes to predict is 3, size of the hidden layer is 10 nodes, with one hidden layer
 	// initial learning rate is 0.3 and number of training iterations is 50
@@ -446,4 +446,4 @@ int main() {
 
 
 	return 0;
-}
+}*/

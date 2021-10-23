@@ -1,8 +1,8 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include "random_uniform_generator.cpp"
 #include "../include/multiclass.hpp"
+#include "random_uniform_generator.cpp"
 
 
 int main() {
