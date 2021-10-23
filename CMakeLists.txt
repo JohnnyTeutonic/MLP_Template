@@ -17,9 +17,6 @@ file(GLOB all_SRCS
 		"${PROJECT_SOURCE_DIR}/src/*.c"
         )
 
-message(STATUS "abc ${all_SRCS}")
-message(STATUS "def ${PROJECT_SOURCE_DIR}/src/main.cpp")
-
 set(CMAKE_CXX_STANDARD 17 CACHE STRING "The C++ standard is 17")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
