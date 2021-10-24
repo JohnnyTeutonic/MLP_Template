@@ -22,6 +22,6 @@ cmake --build .
 ```
 sh build_project.sh
 ```
-- this will also generate the executable in build/debug.
+- this will also generate an executable in build/debug/
 ## Future Work
 - Re-structure project to have a base MLP class which contains common functionality that can be inherited by both the classification and regression MLP classes
