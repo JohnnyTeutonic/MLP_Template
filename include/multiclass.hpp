@@ -50,6 +50,8 @@ private:
 
 	doubleVector relu(const doubleVector& x);
 	doubleVector sigmoid(const doubleVector& x);
+	double softmax_prime();
+	inline double softmax_prime_single(unsigned int index);
 
 	double relu_prime(const double z);
 	double sigmoid_prime(const double z, bool first);
@@ -82,8 +84,6 @@ private:
 	double comp_accuracy();
 	doubleVector comp_prediction(const intVector& preds);
 	doubleVector softmaxoverflow(doubleVector & weights);
-	double softmaxLossGradient();
 	doubleVector convert_probs_to_class(doubleVector & probs);
 	double loss_function_cross_entropy(double epsilon);
-	inline double softmaxLossGradientSingle(unsigned int index);
 };

@@ -143,27 +143,9 @@ void experimental::comp_delta_init(doubleVector& delta,
 	const doubleVector& x,
 	const doubleVector& y) {
 	for (unsigned int i = 0; i < delta.size(); ++i) {
-		delta[i] = softmaxLossGradientSingle(i);
+		delta[i] = softmax_prime_single(i);
 	}
 }
-
-
-inline double experimental::softmaxLossGradientSingle(unsigned int index) {
-	double result;
-	result = x4[index] - y[index];
-	return result;
-}
-
-
-double experimental::softmaxLossGradient() {
-	double result;
-	for (unsigned int i = 0; i < y.size(); ++i) {
-		result += x4[i] - y[i];
-	}
-	return result;
-}
-
-
 
 void experimental::comp_delta(const doubleMatrix& W,
 	const doubleVector& z,
@@ -332,4 +314,19 @@ doubleVector experimental::sigmoid(const doubleVector& z) {
 		x[i] = sigmoid_prime(z[i], false);
 	}
 	return x;
+}
+
+inline double experimental::softmax_prime_single(unsigned int index) {
+	double result;
+	result = x4[index] - y[index];
+	return result;
+}
+
+
+double experimental::softmax_prime() {
+	double result;
+	for (unsigned int i = 0; i < y.size(); ++i) {
+		result += x4[i] - y[i];
+	}
+	return result;
 };
