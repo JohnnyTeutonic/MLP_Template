@@ -18,7 +18,7 @@ public:
 		unsigned int _n_epochs,
 		double _learning_rate);
 	
-	void run(intVector data_train, intVector data_valid, intVector class_labels, intVector valid_labels);
+	void run(intVector& data_train, intVector& data_valid, intVector& train_labels, intVector& valid_labels);
 	std::mt19937 gen;
 	unsigned int n_epochs;
 	unsigned int n_inputs;

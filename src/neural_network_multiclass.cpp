@@ -80,7 +80,7 @@ void experimental::he_initialization(doubleMatrix& W) {
 	}
 }
 
-void experimental::run(intVector data_train, intVector data_valid, intVector class_labels, intVector valid_labels) {
+void experimental::run(intVector& data_train, intVector& data_valid, intVector& class_labels, intVector& valid_labels) {
 	auto it = unique(data_train.begin(), data_train.end());
 	intVector data_train_2;
 	std::copy(data_train.begin(), data_train.end(), std::back_inserter(data_train_2));
