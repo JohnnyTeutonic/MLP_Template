@@ -91,9 +91,8 @@ void experimental::run(intVector& data_train, intVector& data_valid, intVector& 
 	class_labels_2.resize(std::distance(class_labels.begin(), it2));
 
 	RandomIndex rand_idx(data_train.size());
-	RandomIndex rand_idx2(class_labels_2.size());
-	RandomIndex rand_idx3(y.size());
-	RandomIndex rand_idx4(x.size());
+	RandomIndex rand_idx2(y.size());
+	RandomIndex rand_idx3(x.size());
 	unsigned int idx, idx2;
 	for (unsigned int i = 0; i < n_epochs; ++i) {
 		std::cout << "epoch no. " << i << '\n';
@@ -101,12 +100,11 @@ void experimental::run(intVector& data_train, intVector& data_valid, intVector& 
 		std::cout << s << std::endl;
 		for (unsigned int j = 0; j < data_train.size(); ++j) {
 			idx = rand_idx.get();
-			idx2 = rand_idx2.get();
+			auto idx2 = rand_idx2.get();
 			auto idx3 = rand_idx3.get();
-			auto idx4 = rand_idx4.get();
-			x[idx4] = double(data_train[idx]);
+			x[idx3] = double(data_train[idx]);
 			std::fill(y.begin(), y.end(), 0.0);
-			y[idx3] = class_labels[idx2];
+			y[idx2] = class_labels[idx];
 			feedforward();
 			backpropagation();
 			gradient_descent();
