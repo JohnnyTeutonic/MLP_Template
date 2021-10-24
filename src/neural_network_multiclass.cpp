@@ -93,15 +93,15 @@ void experimental::run(intVector& data_train, intVector& data_valid, intVector& 
 	RandomIndex rand_idx(data_train.size());
 	RandomIndex rand_idx2(y.size());
 	RandomIndex rand_idx3(x.size());
-	unsigned int idx, idx2;
+	unsigned int idx, idx2, idx3;
 	for (unsigned int i = 0; i < n_epochs; ++i) {
 		std::cout << "epoch no. " << i << '\n';
 		std::string s(50, '*');
 		std::cout << s << std::endl;
 		for (unsigned int j = 0; j < data_train.size(); ++j) {
 			idx = rand_idx.get();
-			auto idx2 = rand_idx2.get();
-			auto idx3 = rand_idx3.get();
+			idx2 = rand_idx2.get();
+			idx3 = rand_idx3.get();
 			x[idx3] = double(data_train[idx]);
 			std::fill(y.begin(), y.end(), 0.0);
 			y[idx2] = class_labels[idx];
