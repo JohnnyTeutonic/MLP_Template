@@ -6,7 +6,7 @@ Experiment with creating an MLP from scratch in C++
 ## Requirements
 - C++ 17
 - Built using MSVC
-## File informaion
+## File information
 - src/neural_network_multilclass.cpp can be used for multi-class classification
 - src/neural_network_regression.cpp can be used for both regression and binary classificaiton
 ## Build instructions on Windows
