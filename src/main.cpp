@@ -9,13 +9,15 @@ int main() {
 
 	const unsigned int n_samples_train = 300;
 	const unsigned int n_samples_valid = 50;
-	const unsigned int n_class_labels = 3;
+
 	intVector data_train;
 	intVector data_valid;
-	intVector class_samples;
+	intVector train_labels;
+	intVector valid_labels;
 	std::generate_n(std::back_inserter(data_train), n_samples_train, RandomNumberBetween(0, 49));
-	std::generate_n(std::back_inserter(data_valid), n_samples_valid, RandomNumberBetween(0, 2));
-	std::generate_n(std::back_inserter(class_samples), n_class_labels, RandomNumberBetween(0, 2));
+	std::generate_n(std::back_inserter(data_valid), n_samples_valid, RandomNumberBetween(0, 49));
+	std::generate_n(std::back_inserter(train_labels), n_samples_train, RandomNumberBetween(0, 2));
+	std::generate_n(std::back_inserter(valid_labels), n_samples_valid, RandomNumberBetween(0, 2));
 	unsigned int n_inputs = 50;
 	unsigned int n_hidden_1 = 16;
 	unsigned int n_hidden_2 = 8;
@@ -26,7 +28,7 @@ int main() {
 
 	experimental neural_network(n_inputs, n_hidden_1, n_hidden_2, n_hidden_3, n_outputs, n_epochs, learning_rate);
 
-	neural_network.run(data_train, data_valid, class_samples);
+	neural_network.run(data_train, data_valid, train_labels, valid_labels);
 	getchar();
 	return 0;
 }

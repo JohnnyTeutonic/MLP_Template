@@ -80,7 +80,7 @@ void experimental::he_initialization(doubleMatrix& W) {
 	}
 }
 
-void experimental::run(intVector data_train, intVector data_valid, intVector class_labels) {
+void experimental::run(intVector data_train, intVector data_valid, intVector class_labels, intVector valid_labels) {
 	auto it = unique(data_train.begin(), data_train.end());
 	intVector data_train_2;
 	std::copy(data_train.begin(), data_train.end(), std::back_inserter(data_train_2));
@@ -90,8 +90,10 @@ void experimental::run(intVector data_train, intVector data_valid, intVector cla
 	std::copy(class_labels.begin(), class_labels.end(), std::back_inserter(class_labels_2));
 	class_labels_2.resize(std::distance(class_labels.begin(), it2));
 
-	RandomIndex rand_idx(data_train_2.size());
+	RandomIndex rand_idx(data_train.size());
 	RandomIndex rand_idx2(class_labels_2.size());
+	RandomIndex rand_idx3(y.size());
+	RandomIndex rand_idx4(x.size());
 	unsigned int idx, idx2;
 	for (unsigned int i = 0; i < n_epochs; ++i) {
 		std::cout << "epoch no. " << i << '\n';
@@ -99,18 +101,19 @@ void experimental::run(intVector data_train, intVector data_valid, intVector cla
 		std::cout << s << std::endl;
 		for (unsigned int j = 0; j < data_train.size(); ++j) {
 			idx = rand_idx.get();
-			idx = idx >= 50 ? idx % 50 : idx;
 			idx2 = rand_idx2.get();
-			x[idx2] = double(data_train[idx]);
+			auto idx3 = rand_idx3.get();
+			auto idx4 = rand_idx4.get();
+			x[idx4] = double(data_train[idx]);
 			std::fill(y.begin(), y.end(), 0.0);
-			y[idx2] = class_labels[idx2];
+			y[idx3] = class_labels[idx2];
 			feedforward();
 			backpropagation();
 			gradient_descent();
 		}
 
 		if (i % 2 == 0) {
-			comp_stats(data_valid);
+			comp_stats(data_valid, valid_labels);
 		}
 	}
 }
@@ -212,13 +215,13 @@ double experimental::comp_accuracy() {
 	return accuracy;
 }
 
-void experimental::comp_stats(const intVector& data) {
+void experimental::comp_stats(const intVector& data, const intVector& labels) {
 	double loss = 0.0;
 	double accuracy = 0.0;
 	for (unsigned int i = 0; i < data.size(); ++i) {
 		std::fill(y.begin(), y.end(), 0);
 		x[i] = double(data[i]);
-		y[data[i]] = 1;
+		y[labels[i]] = labels[i];
 		feedforward();
 		loss += loss_function_cross_entropy();
 		accuracy += comp_accuracy();

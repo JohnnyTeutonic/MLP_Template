@@ -18,7 +18,7 @@ public:
 		unsigned int _n_epochs,
 		double _learning_rate);
 	
-	void run(intVector data_train, intVector data_valid, intVector class_labels);
+	void run(intVector data_train, intVector data_valid, intVector class_labels, intVector valid_labels);
 	std::mt19937 gen;
 	unsigned int n_epochs;
 	unsigned int n_inputs;
@@ -80,7 +80,7 @@ private:
 		const doubleMatrix& dW,
 		const doubleVector& db);
 
-	void comp_stats(const intVector& data);
+	void comp_stats(const intVector& data, const intVector& labels);
 	double comp_accuracy();
 	doubleVector comp_prediction(const intVector& preds);
 	doubleVector softmaxoverflow(doubleVector & weights);
