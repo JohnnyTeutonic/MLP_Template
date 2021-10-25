@@ -1,13 +1,14 @@
 # MLP_Template
 Experiment with creating an MLP from scratch in C++
-## WIP
+## Supported Features
 - supports multiple hidden layers
-- suports both classification and regression using softmax outputs or sigmoid outputs depending on the task
+- suports multi-class and binary classification
 ## Requirements
 - C++ 17
 - Built using MSVC
 ## File information
-- src/neural_network_multiclass.cpp can be used for multi-class classification and binary classification and is the main class to use for this project
+- include/multiclass.hpp can be used for multi-class classification and binary classification and is the main class to use for this project.
+- include/template_neuralnet.hpp is the same code as above but has been made generic by using templates - this means you can use feature vectors of arbitrary numeric types.
 ## Build instructions on Windows
 - from the root directory of the project, using the Visual Studio Developer command prompt, run the following commands:
 ```
@@ -23,8 +24,8 @@ sh build_project.sh
 ```
 - this will also generate an executable in build/debug/
 ## Example for multi-class classification (using synthetic data)
-- there is example code in 'main.cpp' of how to use 'neural_network_multiclass.cpp' for both binary and multi-class classification.
-- for multi-class classification, use something like the below code:
+- there is example code in 'main.cpp' of how to use 'multiclass.hpp' or 'template_neuralnet.hpp' for both binary and multi-class classification.
+- for multi-class classification, you can use something like the below code (please note that this is using random data):
 ```
 	const unsigned int n_samples_train = 300;
 	const unsigned int n_samples_valid = 50;
@@ -47,7 +48,7 @@ sh build_project.sh
 
 	experimental neural_network(n_inputs, n_hidden_1, n_hidden_2, n_hidden_3, n_outputs, n_epochs, learning_rate);
 ```
-- for binary classification, an example is like this:
+- for binary classification, you can similarly construct an example like this:
 ```
         const unsigned int n_samples_train = 300;
 	const unsigned int n_samples_valid = 50;
@@ -74,4 +75,6 @@ sh build_project.sh
 ```
 
 ## Future Work
-- Add in functionality for regression - at the moment only classification (both binary and multi-class classification is supported)
+- Add in functionality for regression - at the moment only classification (both binary and multi-class) is supported
+- Add in functionality to use a feature matrix as opposed to a feature vector - the latter is only supported at the moment
+- Add in functionality to support cross-compilation - only Windows is supported at the moment
