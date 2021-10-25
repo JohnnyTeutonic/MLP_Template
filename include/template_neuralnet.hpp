@@ -14,8 +14,8 @@
 #include <ctime>
 #include <type_traits>
 
-#include "include/utils.hpp"
-#include "include/random_index_generator.hpp"
+#include "utils.hpp"
+#include "random_index_generator.hpp"
 
 
 template<class T>

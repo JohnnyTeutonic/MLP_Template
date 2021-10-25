@@ -3,7 +3,7 @@
 #include <iostream>
 #include "../include/multiclass.hpp"
 #include "random_uniform_generator.cpp"
-#include "../template_neuralnet.hpp"
+#include "../include/template_neuralnet.hpp"	
 
 int main() {
 
