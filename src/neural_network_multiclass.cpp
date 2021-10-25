@@ -81,30 +81,31 @@ void experimental::he_initialization(doubleMatrix& W) {
 }
 
 void experimental::run(intVector& data_train, intVector& data_valid, intVector& class_labels, intVector& valid_labels) {
-	auto it = unique(data_train.begin(), data_train.end());
+	/*auto it = unique(data_train.begin(), data_train.end());
 	intVector data_train_2;
 	std::copy(data_train.begin(), data_train.end(), std::back_inserter(data_train_2));
 	data_train_2.resize(std::distance(data_train.begin(), it));
 	auto it2 = unique(class_labels.begin(), class_labels.end());
 	intVector class_labels_2;
 	std::copy(class_labels.begin(), class_labels.end(), std::back_inserter(class_labels_2));
-	class_labels_2.resize(std::distance(class_labels.begin(), it2));
+	class_labels_2.resize(std::distance(class_labels.begin(), it2));*/
 
 	RandomIndex rand_idx(data_train.size());
-	RandomIndex rand_idx2(y.size());
-	RandomIndex rand_idx3(x.size());
-	unsigned int idx, idx2, idx3;
+	unsigned int idx;
 	for (unsigned int i = 0; i < n_epochs; ++i) {
 		std::cout << "epoch no. " << i << '\n';
 		std::string s(50, '*');
 		std::cout << s << std::endl;
 		for (unsigned int j = 0; j < data_train.size(); ++j) {
 			idx = rand_idx.get();
-			idx2 = rand_idx2.get();
-			idx3 = rand_idx3.get();
-			x[idx3] = double(data_train[idx]);
+			x[0] = static_cast<double>(data_train[idx]);
 			std::fill(y.begin(), y.end(), 0.0);
-			y[idx2] = class_labels[idx];
+			if (n_outputs==1){
+				y[0] = class_labels[idx];
+			}
+			else{
+				y[class_labels[idx]] = 1.0;
+			}
 			feedforward();
 			backpropagation();
 			gradient_descent();
@@ -124,7 +125,8 @@ void experimental::feedforward() {
 	z3 = matmul(W3, x2, b3);
 	x3 = relu(z3);
 	z4 = matmul(W4, x3, b4);
-	x4 = softmaxoverflow(z4);
+	if (n_outputs == 1) { x4 = sigmoid(x4); }
+	else{x4 = softmaxoverflow(z4);}
 }
 
 void experimental::comp_gradients(doubleMatrix& dW,
@@ -144,7 +146,8 @@ void experimental::comp_delta_init(doubleVector& delta,
 	const doubleVector& x,
 	const doubleVector& y) {
 	for (unsigned int i = 0; i < delta.size(); ++i) {
-		delta[i] = softmax_prime_single(i);
+		if (n_outputs == 1) {delta[i] = sigmoid_prime((z[i]) * (x[i] - y[i]), true); }
+		else { delta[i] = softmax_prime_single(i); }
 	}
 }
 
@@ -203,6 +206,15 @@ double experimental::loss_function_cross_entropy(double epsilon = 1e-8) {
 }
 
 
+double experimental::comp_loss_mse() {
+	double loss = 0.0;
+	for (unsigned int i = 0; i < y.size(); ++i) {
+		loss += std::pow(y[i] - x4[i], 2);
+	}
+	return loss;
+}
+
+
 double experimental::comp_accuracy() {
 	double accuracy = 0.0;
 	unsigned int prediction = std::distance(x4.begin(), std::max_element(x4.begin(), x4.end()));
@@ -218,10 +230,20 @@ void experimental::comp_stats(const intVector& data, const intVector& labels) {
 	double accuracy = 0.0;
 	for (unsigned int i = 0; i < data.size(); ++i) {
 		std::fill(y.begin(), y.end(), 0);
-		x[i] = double(data[i]);
-		y[labels[i]] = labels[i];
+		x[0] = static_cast<double>(data[i]);
+		if (n_outputs == 1) {
+			y[0] = labels[i];
+		}
+		else {
+			y[labels[i]] = 1.0;
+		}
 		feedforward();
-		loss += loss_function_cross_entropy();
+		if (n_outputs == 1) {
+			loss += comp_loss_mse();
+		}
+		else {
+			loss += loss_function_cross_entropy();
+		}
 		accuracy += comp_accuracy();
 	}
 	loss /= static_cast<double>(data.size());
@@ -232,7 +254,7 @@ void experimental::comp_stats(const intVector& data, const intVector& labels) {
 doubleVector experimental::comp_prediction(const intVector& preds) {
 	doubleVector prediction(preds.size());
 	for (unsigned int i = 0; i < preds.size(); ++i) {
-		x[i] = double(preds[i]);
+		x[i] = static_cast<double>(preds[i]);
 		feedforward();
 		prediction[i] = x4[0];
 	}

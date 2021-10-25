@@ -192,7 +192,7 @@ void NeuralNetwork::descent(doubleMatrix& W,
 	}
 }
 
-double NeuralNetwork::comp_loss() {
+double NeuralNetwork::comp_loss_mse() {
 	double loss = 0.0;
 	for (unsigned int i = 0; i < y.size(); ++i) {
 		loss += std::pow(y[i] - x4[i], 2);
@@ -219,7 +219,7 @@ void NeuralNetwork::comp_stats(const pointVector& data) {
 		x[1] = data[i].y;
 		y[data[i].label] = 1.0;
 		feedforward();
-		loss += comp_loss();
+		loss += comp_loss_mse();
 		accuracy += comp_accuracy();
 	}
 	loss /= static_cast<double>(data.size());

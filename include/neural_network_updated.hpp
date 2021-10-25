@@ -105,7 +105,7 @@ private:
 		const doubleVector& db);
 
 	void comp_stats(const pointVector& data);
-	double comp_loss();
+	double comp_loss_mse();
 	double comp_accuracy();
 
 	void comp_prediction_landscape();

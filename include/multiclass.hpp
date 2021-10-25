@@ -86,4 +86,5 @@ private:
 	doubleVector softmaxoverflow(doubleVector & weights);
 	doubleVector convert_probs_to_class(doubleVector & probs);
 	double loss_function_cross_entropy(double epsilon);
+	double comp_loss_mse();
 };
