@@ -21,6 +21,9 @@
     <ClCompile Include="src\neuralnetwork.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\neural_network_binary.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\neural_network_multiclass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -30,12 +33,12 @@
     <ClCompile Include="src\random_uniform_generator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\neural_network_binary.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\multiclass.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\neural_network_updated.hpp">
@@ -47,10 +50,7 @@
     <ClInclude Include="include\utils.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="neural_network_multiclass.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\multiclass.hpp">
+    <ClInclude Include="template_neuralnet.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
