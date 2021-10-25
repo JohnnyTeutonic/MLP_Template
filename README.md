@@ -7,8 +7,7 @@ Experiment with creating an MLP from scratch in C++
 - C++ 17
 - Built using MSVC
 ## File information
-- src/neural_network_multilclass.cpp can be used for multi-class classification
-- src/neural_network_regression.cpp can be used for both regression and binary classificaiton
+- src/neural_network_multiclass.cpp can be used for multi-class classification and binary classification and is the main class to use for this project
 ## Build instructions on Windows
 - from the root directory of the project, using the Visual Studio Developer command prompt, run the following commands:
 ```
@@ -23,5 +22,56 @@ cmake --build .
 sh build_project.sh
 ```
 - this will also generate an executable in build/debug/
+## Example for multi-class classification (using synthetic data)
+- there is example code in 'main.cpp' of how to use 'neural_network_multiclass.cpp' for both binary and multi-class classification.
+- for multi-class classification, use something like the below code:
+```
+	const unsigned int n_samples_train = 300;
+	const unsigned int n_samples_valid = 50;
+
+	intVector data_train;
+	intVector data_valid;
+	intVector train_labels;
+	intVector valid_labels;
+	std::generate_n(std::back_inserter(data_train), n_samples_train, RandomNumberBetween(0, 49));
+	std::generate_n(std::back_inserter(data_valid), n_samples_valid, RandomNumberBetween(0, 49));
+	std::generate_n(std::back_inserter(train_labels), n_samples_train, RandomNumberBetween(0, 2));
+	std::generate_n(std::back_inserter(valid_labels), n_samples_valid, RandomNumberBetween(0, 2));
+	unsigned int n_inputs = 50;
+	unsigned int n_hidden_1 = 16;
+	unsigned int n_hidden_2 = 8;
+	unsigned int n_hidden_3 = 6;
+	unsigned int n_outputs = 3;
+	unsigned int n_epochs = 60;
+	double learning_rate = 1e-4;
+
+	experimental neural_network(n_inputs, n_hidden_1, n_hidden_2, n_hidden_3, n_outputs, n_epochs, learning_rate);
+```
+- for binary classification, an example is like this:
+```
+const unsigned int n_samples_train = 300;
+	const unsigned int n_samples_valid = 50;
+
+	intVector data_train;
+	intVector data_valid;
+	intVector train_labels;
+	intVector valid_labels;
+	std::generate_n(std::back_inserter(data_train), n_samples_train, RandomNumberBetween(0, 49));
+	std::generate_n(std::back_inserter(data_valid), n_samples_valid, RandomNumberBetween(0, 49));
+	std::generate_n(std::back_inserter(train_labels), n_samples_train, RandomNumberBetween(0, 1));
+	std::generate_n(std::back_inserter(valid_labels), n_samples_valid, RandomNumberBetween(0, 1));
+	unsigned int n_inputs = 50;
+	unsigned int n_hidden_1 = 16;
+	unsigned int n_hidden_2 = 8;
+	unsigned int n_hidden_3 = 6;
+	unsigned int n_outputs = 1;
+	unsigned int n_epochs = 60;
+	double learning_rate = 1e-4;
+
+	experimental neural_network(n_inputs, n_hidden_1, n_hidden_2, n_hidden_3, n_outputs, n_epochs, learning_rate);
+
+	neural_network.run(data_train, data_valid, train_labels, valid_labels);
+```
+
 ## Future Work
-- Re-structure project to have a base MLP class which contains common functionality that can be inherited by both the classification and regression MLP classes
+- Add in functionality for regression - at the moment only classification (both binary and multi-class classification is supported)
