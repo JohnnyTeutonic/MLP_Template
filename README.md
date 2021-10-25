@@ -49,7 +49,7 @@ sh build_project.sh
 ```
 - for binary classification, an example is like this:
 ```
-const unsigned int n_samples_train = 300;
+        const unsigned int n_samples_train = 300;
 	const unsigned int n_samples_valid = 50;
 
 	intVector data_train;
