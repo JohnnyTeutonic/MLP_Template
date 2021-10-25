@@ -24,13 +24,13 @@
     <ClCompile Include="src\neural_network_multiclass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\neural_network_regression.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\random_index_generator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\random_uniform_generator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\neural_network_binary.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

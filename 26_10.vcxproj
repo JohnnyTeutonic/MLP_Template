@@ -106,7 +106,7 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\neuralnetwork.cpp" />
     <ClCompile Include="src\neural_network_multiclass.cpp" />
-    <ClCompile Include="src\neural_network_regression.cpp" />
+    <ClCompile Include="src\neural_network_binary.cpp" />
     <ClCompile Include="src\random_index_generator.cpp" />
     <ClCompile Include="src\random_uniform_generator.cpp" />
   </ItemGroup>
