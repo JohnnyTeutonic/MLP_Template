@@ -33,6 +33,7 @@ void softmax(It beg, It end)
 	transform(beg, end, beg, [&](VType x) { auto ex = exp(x - max_ele); exptot += ex; return ex; });
 }
 
+
 struct Node { // holds nodes for the hidden layers and the final layer
 	Node() = default;
 	~Node() = default;

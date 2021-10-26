@@ -23,17 +23,11 @@ int main() {
 	std::generate_n(std::back_inserter(data_valid2), n_samples_valid, RandomNumberBetween(0, 79));
 	std::generate_n(std::back_inserter(train_labels), n_samples_train, RandomNumberBetween(0, 2));
 	std::generate_n(std::back_inserter(valid_labels), n_samples_valid, RandomNumberBetween(0, 2));
-	struct Point {
-		double x;
-		double y;
-		unsigned int sz;
-		Point::Point(unsigned int size) : sz(size) {};
-	};
-	std::vector<Point> data_train_mat;
-	std::vector<Point> data_test_mat;
+	std::vector<Point2D> data_train_mat;
+	std::vector<Point2D> data_test_mat;
 	std::cout << "size is " << data_train_mat.size() << std::endl;
 	for (unsigned int i = 0; i < 30; ++i) {
-		Point randomVecTrain(2);
+		Point2D randomVecTrain(2);
 		if (train_labels[i] == 0) {
 			randomVecTrain.x = 0;
 			randomVecTrain.y = 1;
@@ -51,7 +45,7 @@ int main() {
 
 	}
 	for (unsigned int i = 0; i < 10; ++i) {
-		Point randomVecTest(2);
+		Point2D randomVecTest(2);
 		if (valid_labels[i] == 0) {
 			randomVecTest.x = 0;
 			randomVecTest.y = 1;
@@ -76,7 +70,7 @@ int main() {
 	unsigned int n_epochs = 40;
 	double learning_rate = 1e-4;
 
-	templatenet<std::vector<Point>> neural_network(n_inputs, n_hidden_1, n_hidden_2, n_hidden_3, n_outputs, n_epochs, learning_rate);
+	templatenet<std::vector<Point2D>> neural_network(n_inputs, n_hidden_1, n_hidden_2, n_hidden_3, n_outputs, n_epochs, learning_rate);
 
 
 	neural_network.run(data_train_mat, data_test_mat, train_labels, valid_labels);
