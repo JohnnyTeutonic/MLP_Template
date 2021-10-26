@@ -6,8 +6,10 @@
 #include <functional>
 #include <iostream>
 #include <iterator>
+#include <map>
 #include <stdlib.h>	
 #include <string>
+#include <utility>
 #include <vector>
 #include <ostream>
 #include <string>
@@ -183,14 +185,37 @@ void templatenet<T>::run(actualType& data_train, actualType& data_valid, intVect
 	assert(data_train[0].sz == n_inputs);
 	RandomIndex rand_idx(data_train.size());
 	unsigned int idx;
+	using elemType = typename std::decay<decltype(*data_train.begin())>::type;
 	for (unsigned int i = 0; i < n_epochs; ++i) {
 		std::cout << "epoch no. " << i << '\n';
 		std::string s(50, '*');
 		std::cout << s << std::endl;
 		for (unsigned int j = 0; j < data_train.size(); ++j) {
 			idx = rand_idx.get();
-			x[0] = static_cast<double>(data_train[idx].x);
-			x[1] = static_cast<double>(data_train[idx].y);
+			switch (n_inputs) {
+			case 1:
+				x[0] = static_cast<double>(data_train[idx].x);
+				break;
+			case 2:
+				x[0] = static_cast<double>(data_train[idx].x);
+				x[1] = static_cast<double>(data_train[idx].y);
+				break;
+			case 3:
+				x[0] = static_cast<double>(data_train[idx].x);
+				x[1] = static_cast<double>(data_train[idx].y);
+				x[2] = static_cast<double>(data_train[idx].z);
+				break;
+			case 4:
+				x[0] = static_cast<double>(data_train[idx].w);
+				x[1] = static_cast<double>(data_train[idx].x);
+				x[2] = static_cast<double>(data_train[idx].y);
+				x[3] = static_cast<double>(data_train[idx].z);
+				break;
+			default:
+				throw std::runtime_error("features of up to 4 are only supported at this time");
+				break;
+			}
+
 			std::fill(y.begin(), y.end(), 0.0);
 			if (n_outputs == 1) {
 				y[0] = class_labels[idx];
@@ -208,6 +233,9 @@ void templatenet<T>::run(actualType& data_train, actualType& data_valid, intVect
 		}
 	}
 }
+
+
+
 
 template<class T>
 void templatenet<T>::feedforward() {
@@ -330,8 +358,30 @@ void templatenet<T>::comp_stats(const actualType& data, const intVector& labels)
 	double accuracy = 0.0;
 	for (unsigned int i = 0; i < data.size(); ++i) {
 		std::fill(y.begin(), y.end(), 0);
-		x[0] = static_cast<double>(data[i].x);
-		x[1] = static_cast<double>(data[i].y);
+		switch (n_inputs) {
+		case 1:
+			x[0] = static_cast<double>(data[i].x);
+			break;
+		case 2:
+			x[0] = static_cast<double>(data[i].x);
+			x[1] = static_cast<double>(data[i].y);
+			break;
+		case 3:
+			x[0] = static_cast<double>(data[i].x);
+			x[1] = static_cast<double>(data[i].y);
+			x[2] = static_cast<double>(data[i].x);
+			break;
+		case 4:
+			x[0] = static_cast<double>(data[i].w);
+			x[1] = static_cast<double>(data[i].x);
+			x[2] = static_cast<double>(data[i].y);
+			x[3] = static_cast<double>(data[i].y);
+			break;
+		default:
+			throw std::runtime_error("features of up to 4 are only supported at this time");
+			break;
+		}
+
 		if (n_outputs == 1) {
 			y[0] = labels[i];
 		}

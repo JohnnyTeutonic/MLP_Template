@@ -23,46 +23,58 @@ int main() {
 	std::generate_n(std::back_inserter(data_valid2), n_samples_valid, RandomNumberBetween(0, 79));
 	std::generate_n(std::back_inserter(train_labels), n_samples_train, RandomNumberBetween(0, 2));
 	std::generate_n(std::back_inserter(valid_labels), n_samples_valid, RandomNumberBetween(0, 2));
-	std::vector<Point2D> data_train_mat;
-	std::vector<Point2D> data_test_mat;
+	std::vector<Point4D> data_train_mat;
+	std::vector<Point4D> data_test_mat;
 	std::cout << "size is " << data_train_mat.size() << std::endl;
-	for (unsigned int i = 0; i < 30; ++i) {
-		Point2D randomVecTrain(2);
+	for (unsigned int i = 0; i < n_samples_train; ++i) {
+		Point4D randomVecTrain(4);
 		if (train_labels[i] == 0) {
-			randomVecTrain.x = 0;
-			randomVecTrain.y = 1;
+			randomVecTrain.w = 0;
+			randomVecTrain.x = 1;
+			randomVecTrain.y = 2;
+			randomVecTrain.z = 3;
 		}
 		if (train_labels[i] == 1) {
+			randomVecTrain.w = 2;
 			randomVecTrain.x = 3;
 			randomVecTrain.y = 4;
+			randomVecTrain.z = 5;
 		}
 		if (train_labels[i] == 2) {
+			randomVecTrain.w = 4;
 			randomVecTrain.x = 5;
 			randomVecTrain.y = 6;
+			randomVecTrain.z = 7;
 		}
 
 		data_train_mat.push_back(randomVecTrain);
 
 	}
-	for (unsigned int i = 0; i < 10; ++i) {
-		Point2D randomVecTest(2);
+	for (unsigned int i = 0; i < n_samples_valid; ++i) {
+		Point4D randomVecTest(4);
 		if (valid_labels[i] == 0) {
-			randomVecTest.x = 0;
-			randomVecTest.y = 1;
+			randomVecTest.w = 0;
+			randomVecTest.x = 1;
+			randomVecTest.y = 2;
+			randomVecTest.z = 3;
 		}
 		if (valid_labels[i] == 1) {
+			randomVecTest.w = 2;
 			randomVecTest.x = 3;
 			randomVecTest.y = 4;
+			randomVecTest.z = 5;
 		}
 		if (valid_labels[i] == 2) {
+			randomVecTest.w = 4;
 			randomVecTest.x = 5;
 			randomVecTest.y = 6;
+			randomVecTest.z = 7;
 		}
 
 		data_test_mat.push_back(randomVecTest);
 
 	}
-	unsigned int n_inputs = 2;
+	unsigned int n_inputs = 4;
 	unsigned int n_hidden_1 = 16;
 	unsigned int n_hidden_2 = 8;
 	unsigned int n_hidden_3 = 6;
@@ -71,9 +83,7 @@ int main() {
 	double learning_rate = 1e-4;
 	std::string mode = "classification";
 
-	templatenet<std::vector<Point2D>> neural_network(n_inputs, n_hidden_1, n_hidden_2, n_hidden_3, n_outputs, n_epochs, learning_rate, mode);
-
-
+	templatenet<std::vector<Point4D>> neural_network(n_inputs, n_hidden_1, n_hidden_2, n_hidden_3, n_outputs, n_epochs, learning_rate, mode);
 	neural_network.run(data_train_mat, data_test_mat, train_labels, valid_labels);
 
 	//### the below code is used for binary classification
