@@ -69,8 +69,9 @@ int main() {
 	unsigned int n_outputs = 3;
 	unsigned int n_epochs = 40;
 	double learning_rate = 1e-4;
+	std::string mode = "classification";
 
-	templatenet<std::vector<Point2D>> neural_network(n_inputs, n_hidden_1, n_hidden_2, n_hidden_3, n_outputs, n_epochs, learning_rate);
+	templatenet<std::vector<Point2D>> neural_network(n_inputs, n_hidden_1, n_hidden_2, n_hidden_3, n_outputs, n_epochs, learning_rate, mode);
 
 
 	neural_network.run(data_train_mat, data_test_mat, train_labels, valid_labels);

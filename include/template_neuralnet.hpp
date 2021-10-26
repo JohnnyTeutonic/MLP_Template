@@ -7,6 +7,7 @@
 #include <iostream>
 #include <iterator>
 #include <stdlib.h>	
+#include <string>
 #include <vector>
 #include <ostream>
 #include <string>
@@ -28,7 +29,7 @@ public:
 		unsigned int _n_hidden_3,
 		unsigned int _n_outputs,
 		unsigned int _n_epochs,
-		double _learning_rate);
+		double _learning_rate, std::string mode);
 	using actualType = T;
 	void run(actualType& data_train, actualType& data_valid, intVector& train_labels, intVector& valid_labels);
 	std::mt19937 gen;
@@ -39,6 +40,7 @@ public:
 	unsigned int n_hidden_3;
 	unsigned int n_outputs;
 	double learning_rate;
+	std::string mode;
 
 private:
 	doubleMatrix W1, W2, W3, W4;
@@ -110,7 +112,7 @@ templatenet<T>::templatenet(unsigned int _n_inputs,
 	unsigned int _n_hidden_3,
 	unsigned int _n_outputs,
 	unsigned int _n_epochs,
-	double _learning_rate) : gen{ std::random_device()() } {
+	double _learning_rate, std::string _mode) : gen{ std::random_device()() } {
 
 	n_inputs = _n_inputs;
 	n_hidden_1 = _n_hidden_1;
@@ -119,6 +121,7 @@ templatenet<T>::templatenet(unsigned int _n_inputs,
 	n_outputs = _n_outputs;
 	n_epochs = _n_epochs;
 	learning_rate = _learning_rate;
+	mode = _mode;
 	typedef T value_type;
 	value_type actual_type;
 	W1.resize(n_hidden_1, doubleVector(n_inputs, 0.0));
@@ -215,7 +218,7 @@ void templatenet<T>::feedforward() {
 	z3 = matmul(W3, x2, b3);
 	x3 = relu(z3);
 	z4 = matmul(W4, x3, b4);
-	if (n_outputs == 1) { x4 = sigmoid(x4); }
+	if (n_outputs == 1) { { mode == "classification" ? x4 = sigmoid(x4) : x4 = x4; } }
 	else { x4 = softmaxoverflow(z4); }
 }
 
@@ -238,7 +241,8 @@ void templatenet<T>::comp_delta_init(doubleVector& delta,
 	const doubleVector& x,
 	const doubleVector& y) {
 	for (unsigned int i = 0; i < delta.size(); ++i) {
-		if (n_outputs == 1) { delta[i] = sigmoid_prime((z[i]) * (x[i] - y[i]), true); }
+		if (n_outputs == 1) {
+			mode == "classification" ? delta[i] = sigmoid_prime((z[i]) * (x[i] - y[i]), true) : delta[i] = (z[i]) * (x[i] - y[i]);}
 		else { delta[i] = softmax_prime_single(i); }
 	}
 }
