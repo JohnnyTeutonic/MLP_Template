@@ -185,7 +185,8 @@ void templatenet<T>::run(actualType& data_train, actualType& data_valid, intVect
 		std::cout << s << std::endl;
 		for (unsigned int j = 0; j < data_train.size(); ++j) {
 			idx = rand_idx.get();
-			x[0] = static_cast<double>(data_train[idx]);
+			x[0] = static_cast<double>(data_train[idx].x);
+			x[1] = static_cast<double>(data_train[idx].y);
 			std::fill(y.begin(), y.end(), 0.0);
 			if (n_outputs == 1) {
 				y[0] = class_labels[idx];
@@ -285,7 +286,7 @@ void templatenet<T>::descent(doubleMatrix& W,
 	for (unsigned int i = 0; i < W.size(); ++i) {
 		for (unsigned int j = 0; j < W[0].size(); ++j) {
 			W[i][j] -= learning_rate * dW[i][j];
-		}
+		}	
 		b[i] -= learning_rate * db[i];
 	}
 }
@@ -324,7 +325,8 @@ void templatenet<T>::comp_stats(const actualType& data, const intVector& labels)
 	double accuracy = 0.0;
 	for (unsigned int i = 0; i < data.size(); ++i) {
 		std::fill(y.begin(), y.end(), 0);
-		x[0] = static_cast<double>(data[i]);
+		x[0] = static_cast<double>(data[i].x);
+		x[1] = static_cast<double>(data[i].y);
 		if (n_outputs == 1) {
 			y[0] = labels[i];
 		}
