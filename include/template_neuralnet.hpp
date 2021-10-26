@@ -1,4 +1,5 @@
 #pragma once
+#include <cassert>
 #include <cmath>
 #include <algorithm>
 #include <fstream>
@@ -176,7 +177,7 @@ void templatenet<T>::he_initialization(doubleMatrix& W) {
 
 template<class T>
 void templatenet<T>::run(actualType& data_train, actualType& data_valid, intVector& class_labels, intVector& valid_labels) {
-
+	assert(data_train[0].sz == n_inputs);
 	RandomIndex rand_idx(data_train.size());
 	unsigned int idx;
 	for (unsigned int i = 0; i < n_epochs; ++i) {

@@ -26,12 +26,14 @@ int main() {
 	struct Point {
 		double x;
 		double y;
+		unsigned int sz;
+		Point::Point(unsigned int size) : sz(size) {};
 	};
 	std::vector<Point> data_train_mat;
 	std::vector<Point> data_test_mat;
 	std::cout << "size is " << data_train_mat.size() << std::endl;
 	for (unsigned int i = 0; i < 30; ++i) {
-		Point randomVecTrain;
+		Point randomVecTrain(2);
 		if (train_labels[i] == 0) {
 			randomVecTrain.x = 0;
 			randomVecTrain.y = 1;
@@ -49,7 +51,7 @@ int main() {
 
 	}
 	for (unsigned int i = 0; i < 10; ++i) {
-		Point randomVecTest;
+		Point randomVecTest(2);
 		if (valid_labels[i] == 0) {
 			randomVecTest.x = 0;
 			randomVecTest.y = 1;
