@@ -11,19 +11,38 @@ int main() {
 	const unsigned int n_samples_train = 30;
 	const unsigned int n_samples_valid = 10;
 
-	intVector data_train;
-	intVector data_valid;
-	intVector data_train2;
-	intVector data_valid2;
 	intVector train_labels;
 	intVector valid_labels;
-	std::generate_n(std::back_inserter(data_train), n_samples_train, RandomNumberBetween(0, 79));
-	std::generate_n(std::back_inserter(data_valid), n_samples_valid, RandomNumberBetween(0, 79));
-	std::generate_n(std::back_inserter(data_train2), n_samples_train, RandomNumberBetween(0, 79));
-	std::generate_n(std::back_inserter(data_valid2), n_samples_valid, RandomNumberBetween(0, 79));
 	std::generate_n(std::back_inserter(train_labels), n_samples_train, RandomNumberBetween(0, 2));
 	std::generate_n(std::back_inserter(valid_labels), n_samples_valid, RandomNumberBetween(0, 2));
-	std::vector<Point4D> data_train_mat;
+	std::vector<intVector> data_train_mat_vec;
+	std::vector<intVector> data_valid_mat_vec;
+	for (unsigned int i = 0; i < n_samples_train; ++i) {
+		intVector data_train_temp;
+		std::generate_n(std::back_inserter(data_train_temp), 6, RandomNumberBetween(0, 29));
+		data_train_mat_vec.push_back(data_train_temp);
+	}
+
+	for (unsigned int i = 0; i < n_samples_valid; ++i) {
+		intVector data_valid_temp;
+		std::generate_n(std::back_inserter(data_valid_temp), 6, RandomNumberBetween(0, 29));
+		data_valid_mat_vec.push_back(data_valid_temp);
+
+	}
+
+	unsigned int n_inputs = 6;
+	unsigned int n_hidden_1 = 16;
+	unsigned int n_hidden_2 = 8;
+	unsigned int n_hidden_3 = 6;
+	unsigned int n_outputs = 3;
+	unsigned int n_epochs = 40;
+	double learning_rate = 1e-4;
+	std::string mode = "classification";
+
+	templatenet<std::vector<intVector>> neural_network(n_inputs, n_hidden_1, n_hidden_2, n_hidden_3, n_outputs, n_epochs, learning_rate, mode);
+	neural_network.run(data_train_mat_vec, data_valid_mat_vec, train_labels, valid_labels);
+
+	/*std::vector<Point4D> data_train_mat;
 	std::vector<Point4D> data_test_mat;
 	std::cout << "size is " << data_train_mat.size() << std::endl;
 	for (unsigned int i = 0; i < n_samples_train; ++i) {
@@ -85,6 +104,7 @@ int main() {
 
 	templatenet<std::vector<Point4D>> neural_network(n_inputs, n_hidden_1, n_hidden_2, n_hidden_3, n_outputs, n_epochs, learning_rate, mode);
 	neural_network.run(data_train_mat, data_test_mat, train_labels, valid_labels);
+	*/
 
 	//### the below code is used for binary classification
 	/*const unsigned int n_samples_train = 300;

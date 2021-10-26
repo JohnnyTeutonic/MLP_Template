@@ -182,7 +182,8 @@ void templatenet<T>::he_initialization(doubleMatrix& W) {
 
 template<class T>
 void templatenet<T>::run(actualType& data_train, actualType& data_valid, intVector& class_labels, intVector& valid_labels) {
-	assert(data_train[0].sz == n_inputs);
+	//assert(data_train[0].sz == n_inputs);
+	assert(data_train[0].size() == n_inputs);
 	RandomIndex rand_idx(data_train.size());
 	unsigned int idx;
 	using elemType = typename std::decay<decltype(*data_train.begin())>::type;
@@ -192,7 +193,10 @@ void templatenet<T>::run(actualType& data_train, actualType& data_valid, intVect
 		std::cout << s << std::endl;
 		for (unsigned int j = 0; j < data_train.size(); ++j) {
 			idx = rand_idx.get();
-			switch (n_inputs) {
+			for (unsigned int k = 0; k < data_train[0].size(); ++k) {
+				x[k] = static_cast<double>(data_train[idx][k]);
+			}
+			/*switch (n_inputs) {
 			case 1:
 				x[0] = static_cast<double>(data_train[idx].x);
 				break;
@@ -214,11 +218,11 @@ void templatenet<T>::run(actualType& data_train, actualType& data_valid, intVect
 			default:
 				throw std::runtime_error("features of up to 4 are only supported at this time");
 				break;
-			}
+			}*/
 
 			std::fill(y.begin(), y.end(), 0.0);
 			if (n_outputs == 1) {
-				y[0] = class_labels[idx];
+				y[0] = static_cast<double>(class_labels[idx]);
 			}
 			else {
 				y[class_labels[idx]] = 1.0;
@@ -233,8 +237,6 @@ void templatenet<T>::run(actualType& data_train, actualType& data_valid, intVect
 		}
 	}
 }
-
-
 
 
 template<class T>
@@ -358,7 +360,11 @@ void templatenet<T>::comp_stats(const actualType& data, const intVector& labels)
 	double accuracy = 0.0;
 	for (unsigned int i = 0; i < data.size(); ++i) {
 		std::fill(y.begin(), y.end(), 0);
-		switch (n_inputs) {
+			for (unsigned int k = 0; k < data[0].size(); ++k) {
+				x[k] = static_cast<double>(data[i][k]);
+			}
+
+		/*switch (n_inputs) {
 		case 1:
 			x[0] = static_cast<double>(data[i].x);
 			break;
@@ -380,10 +386,10 @@ void templatenet<T>::comp_stats(const actualType& data, const intVector& labels)
 		default:
 			throw std::runtime_error("features of up to 4 are only supported at this time");
 			break;
-		}
+		}*/
 
 		if (n_outputs == 1) {
-			y[0] = labels[i];
+			y[0] = static_cast<double>(labels[i]);
 		}
 		else {
 			y[labels[i]] = 1.0;
