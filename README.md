@@ -23,7 +23,7 @@ Or for x86 build:
 ```
 cmake -G "Visual Studio 15 2017" -A Win32 -/S ../
 cmake --build .
-``
+```
 - this will generate an executable in build/debug/
 - the executable is a demonstration of running an MLP multi-class classification problem using synthetic data with 3 hidden layers
 - alternatively, using the Visual Studio Developer command prompt, run the following command from the root dir:
