@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 3.8)
 
 project (updated_mlp VERSION 0.5 DESCRIPTION "A minimal example of a vanilla MLP for Regression and Classification" LANGUAGES CXX)
+set(CMAKE_BUILD_TYPE_INIT "Release")
 set(CMAKE_CXX_STANDARD 17)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")

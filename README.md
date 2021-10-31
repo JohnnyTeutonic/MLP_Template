@@ -12,16 +12,16 @@ Experiment with creating an MLP from scratch in C++
 ## Build instructions on Windows
 - from the root directory of the project, using the Visual Studio Developer command prompt, run the following commands:
 ```
-mkdir build && cd build
+mkdir build && cd build	
 ```
 For x64 build:
 ```
-cmake -G "Visual Studio 15 2017" -A x64 -/S ../
+cmake -G "Visual Studio 15 2017" -A x64 -S ../
 cmake --build .
 ```
 Or for x86 build:
 ```
-cmake -G "Visual Studio 15 2017" -A Win32 -/S ../
+cmake -G "Visual Studio 15 2017" -A Win32 -S ../
 cmake --build .
 ```
 - this will generate an executable in build/debug/
