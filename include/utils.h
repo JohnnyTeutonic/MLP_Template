@@ -21,8 +21,8 @@ void softmax(It beg, It end)
 {
 	using VType = typename iterator_traits<It>::value_type;
 
-	static_assert(is_doubleing_point<VType>::value,
-		"Softmax function only applicable for doubleing point types");
+	static_assert(is_floating_point<VType>::value,
+		"Softmax function only applicable for floating point types");
 
 	auto max_ele{ *max_element(beg, end) };
 

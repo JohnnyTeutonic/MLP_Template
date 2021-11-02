@@ -4,33 +4,47 @@ Experiment with creating an MLP from scratch in C++
 - supports multiple hidden layers
 - suports multi-class and binary classification
 ## Requirements
-- C++ 17
-- Built using MSVC
+- A compiler with compatibility and support for C++ 17 - either MSVC 2017 (Windows) or GCC >= 5.0 (Linux/OSX)
 ## File information
 - include/multiclass.hpp can be used for multi-class classification and binary classification and is the main class to use for this project.
 - include/template_neuralnet.hpp is the same code as above but has been made generic by using templates - this means you can use feature vectors of arbitrary numeric types.
-## Build instructions on Windows
-- from the root directory of the project, using the Visual Studio Developer command prompt, run the following commands:
+## Build instructions for Windows
+- from the root directory of the project, using a command prompt equipped with MSVC 2017, run the following commands:
 ```
 mkdir build && cd build	
 ```
-For x64 build:
+For an x64 build:
 ```
 cmake -G "Visual Studio 15 2017" -A x64 -S ../
 cmake --build .
 ```
-Or for x86 build:
+Alternatively, for an x86 build:
 ```
 cmake -G "Visual Studio 15 2017" -A Win32 -S ../
 cmake --build .
 ```
 - this will generate an executable in build/debug/
 - the executable is a demonstration of running an MLP multi-class classification problem using synthetic data with 3 hidden layers
-- alternatively, using the Visual Studio Developer command prompt, run the following command from the root dir:
+- alternatively, using a command prompt equipped with MSVC 2017, run the following command from the root dir:
 ```
-sh build_project.sh
+build_project_windows.bat
 ```
 - this will also generate an executable in build/debug/
+
+## Build instructions for Linux
+- from the root directory of the project run:
+```
+mkdir build_linux && cd build_linux
+cmake .. -G"Unix Makefiles"
+make
+```
+- this will generate an executable in "build_linux" named "updated_mlp"
+- alternatively, you can use an automated shell script:
+```
+./build_project_linus.sh
+```
+- this will also generate an executable in "build_linux" named "updated_mlp"
+
 ## Example for multi-class classification (using synthetic data)
 - there is example code in 'main.cpp' of how to use 'multiclass.hpp' or 'template_neuralnet.hpp' for both binary and multi-class classification.
 - for multi-class classification, you can use something like the below code (please note that this is using random data):

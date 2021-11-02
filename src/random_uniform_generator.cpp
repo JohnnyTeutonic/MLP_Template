@@ -8,7 +8,7 @@ public:
 		, distribution_{ low, high }
 	{
 	}	
-	int RandomNumberBetween::operator()()
+	int operator()()
 	{
 		return static_cast<unsigned int>(distribution_(random_engine_));
 	}

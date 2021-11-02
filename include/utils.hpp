@@ -11,7 +11,7 @@ struct Point2D {
 	int x;
 	int y;
 	unsigned int sz;
-	Point2D::Point2D(unsigned int size) : sz(size) {};
+	Point2D(unsigned int size) : sz(size) {};
 };
 
 
@@ -20,7 +20,7 @@ struct Point3D {
 	int y;
 	int z;
 	unsigned int sz;
-	Point3D::Point3D(unsigned int size) : sz(size) {};
+	Point3D(unsigned int size) : sz(size) {};
 };
 
 
@@ -30,7 +30,7 @@ struct Point4D {
 	int y;
 	int z;
 	unsigned int sz;
-	Point4D::Point4D(unsigned int size) : sz(size) {};
+	Point4D(unsigned int size) : sz(size) {};
 };
 
 using pointVector = std::vector<Point>;

@@ -1,4 +1,5 @@
 #include "../include/utils.h"
+#include <cmath>
 
 class MLP {
 public:
@@ -108,7 +109,7 @@ public:
 		return val < 0.0 ? 0.0 : val;
 	}
 
-	double MLP::sigmoid(const double z) {
+	double sigmoid(const double z) {
 		double sigma;
 		if (z > 0.0) {
 			sigma = 1.0 / (1.0 + exp(-z));
@@ -120,24 +121,22 @@ public:
 	}
 
 
-	Vec MLP::sigmoid_iter(const Vec& z) {
+	Vec sigmoid_iter(const Vec& z) {
 		Vec x(z.size());
 		for (unsigned int i = 0; i < z.size(); ++i) {
 			if (z[i] > 0.0) {
-				x[i] = 1.0 / (1.0 + std::exp(-z[i]));
+				x[i] = 1.0 / (1.0 + exp(-z[i]));
 			}
 			else {
-				x[i] = std::exp(z[i]) / (1.0 + std::exp(z[i]));
+				x[i] = exp(z[i]) / (1.0 + exp(z[i]));
 			}
 		}
 		return x;
 	}
 
-
-
 	double loss_function_cross_entropy(Vec & p, Vec & q, double epsilon=1e-8) { // p is ground truth, q is softmax/sigmoid predictions from forward prop
 		Vec loss_vec;
-		transform(p.begin(), p.end(), q.begin(), back_inserter(loss_vec), [&](double x, double y) {return x * log( y+ epsilon); });
+		transform(p.begin(), p.end(), q.begin(), back_inserter(loss_vec), [&](double x, double y) {return x * log( y + epsilon); });
 		double loss = accumulate(loss_vec.begin(), loss_vec.end(), 0.0);
 		return -loss;
 	}
@@ -178,9 +177,8 @@ public:
 		return derivativeWeights;
 	}
 
-	template<typename To, typename From> To convert(From f);
 	template<typename To, typename From> // convert from one type to another
-	To MLP::convert(From f)
+	To convert(From f)
 	{
 		return To();
 	}

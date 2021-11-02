@@ -326,8 +326,9 @@ void templatenet<T>::descent(doubleMatrix& W,
 	}
 }
 
+
 template<class T>
-double templatenet<T>::loss_function_cross_entropy(double epsilon = 1e-8) {
+double templatenet<T>::loss_function_cross_entropy(double epsilon) {
 	doubleVector loss_vec;
 	transform(y.begin(), y.end(), x4.begin(), std::back_inserter(loss_vec), [&](double x, double y) {return x * std::log(y + epsilon); });
 	double loss = std::accumulate(loss_vec.begin(), loss_vec.end(), 0.0);
@@ -479,7 +480,7 @@ double templatenet<T>::relu_prime(const double z) {
 }
 
 template<class T>
-double templatenet<T>::sigmoid_prime(const double z, bool first = true) {
+double templatenet<T>::sigmoid_prime(const double z, bool first) {
 	const double denominator = (1.0 + std::exp(-z));
 	const double denominator2 = (1.0 + std::exp(z));
 	double sigma;
