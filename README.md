@@ -7,7 +7,7 @@ Experiment with creating an MLP from scratch in C++
 - A compiler with compatibility and support for C++ 17 - either MSVC 2017 (Windows) or GCC >= 5.0 (Linux/OSX)
 ## File information
 - include/multiclass.hpp can be used for multi-class classification and binary classification and is the main class to use for this project.
-- include/template_neuralnet.hpp is the same code as above but has been made generic by using templates - this means you can use feature vectors of arbitrary numeric types.
+- include/template_neuralnet.hpp is the same code as above but has been made generic by using templates - this means you can use feature vectors of arbitrary numeric types and it also contains functionality for using drop-out on hidden layers.
 ## Build instructions for Windows
 - from the root directory of the project, using a command prompt equipped with MSVC 2017, run the following commands:
 ```
@@ -96,7 +96,7 @@ make
 	neural_network.run(data_train, data_valid, train_labels, valid_labels);
 ```
 
-- 'template_neuralnet.hpp' is the most-up-to-date example and includes drop-out functionality within. 
+- 'template_neuralnet.hpp' contains the most-up-to-date code and includes drop-out functionality within. 
 - An example of how to perform multi-class classification using a feature vector of ints of size 6 is found in 'main.cpp' but also shown below:
 ```
 	const unsigned int n_samples_train = 100;
