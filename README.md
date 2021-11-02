@@ -97,7 +97,7 @@ make
 ```
 
 - 'template_neuralnet.hpp' contains the most-up-to-date code and includes drop-out functionality within. 
-- An example of how to perform multi-class classification using a feature vector of ints of size 6 is found in 'main.cpp' but also shown below:
+- An example of how to perform multi-class classification (using template_neuralnet.hpp) with drop-out on individual hidden layers, using a feature vector of ints, is also found in main.cpp and shown below:
 ```
 	const unsigned int n_samples_train = 100;
 	const unsigned int n_samples_valid = 10;
