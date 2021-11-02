@@ -98,4 +98,4 @@ make
 
 ## Future Work
 - Add in functionality for regression - at the moment only classification (both binary and multi-class) is supported
-- Add in functionality to support arbitrary number of hidden inputs - at the moment the code is hard-coded for 3 different hidden layers.
+- Add in functionality to support an arbitrary number of hidden inputs - at the moment the code is hard-coded for 3 different hidden layers.
