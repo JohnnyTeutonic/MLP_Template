@@ -1,6 +1,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <cstdlib>
 #include "../include/multiclass.hpp"
 #include "random_uniform_generator.cpp"
 #include "../include/template_neuralnet.hpp"	
@@ -8,7 +9,7 @@
 int main() {
 
     //### the below code is used for multi-class classification
-	const unsigned int n_samples_train = 30;
+	const unsigned int n_samples_train = 100;
 	const unsigned int n_samples_valid = 10;
 
 	intVector train_labels;
@@ -38,8 +39,8 @@ int main() {
 	unsigned int n_epochs = 40;
 	double learning_rate = 1e-4;
 	std::string mode = "classification";
-
-	templatenet<std::vector<intVector>> neural_network(n_inputs, n_hidden_1, n_hidden_2, n_hidden_3, n_outputs, n_epochs, learning_rate, mode);
+	doubleVector drop_probs = { 0.5, 0.0, 0.0 };
+	templatenet<std::vector<intVector>> neural_network(n_inputs, n_hidden_1, n_hidden_2, n_hidden_3, n_outputs, n_epochs, learning_rate, drop_probs, mode);
 	neural_network.run(data_train_mat_vec, data_valid_mat_vec, train_labels, valid_labels);
 
 	/*std::vector<Point4D> data_train_mat;

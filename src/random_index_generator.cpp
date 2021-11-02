@@ -11,7 +11,7 @@ unsigned int RandomIndex::get() {
 	}
 	else {
 		counter = 0;
-		unsigned int seed = std::chrono::system_clock::now().time_since_epoch().count();
+		unsigned int seed = static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count());
 		std::shuffle(index.begin(), index.end(), std::default_random_engine(seed));
 		return index[counter++];
 	}

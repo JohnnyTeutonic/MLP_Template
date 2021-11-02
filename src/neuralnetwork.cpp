@@ -98,7 +98,7 @@ public:
 	Vec convert_probs_to_class(Vec & probs) {
 		Vec::iterator result = max_element(probs.begin(), probs.end());
 		int argmaxVal = distance(probs.begin(), result);
-		int selected_class = probs[argmaxVal];
+		int selected_class = static_cast<int>(probs[argmaxVal]);
 		Vec one_hot_classes(probs.size());
 		fill(one_hot_classes.begin(), one_hot_classes.end(), 0.0);
 		one_hot_classes[selected_class] = 1.0;
@@ -171,7 +171,7 @@ public:
 	Vec softmax_gradient(Vec & weights) {
 		Vec derivativeWeights;
 		Vec act = this->softmaxoverflow(weights);
-		for (int i = 0; i < act.size(); i++) {
+		for (unsigned int i = 0; i < act.size(); i++) {
 			derivativeWeights.emplace_back(act[i] * (1.0 - act[i]));
 		}
 		return derivativeWeights;
@@ -224,9 +224,9 @@ public:
 		for (auto x : dZ) { // for debugging purposes
 			cout << "dZ" << x << endl;
 		}
-		for (auto i = 0; i < W_curr.size(); i++) {
-			for (auto j = 0; j < W_curr[0].size(); j++) {
-				for (auto k = 0; k < dZ.size(); k++) {
+		for (unsigned int i = 0; i < W_curr.size(); i++) {
+			for (unsigned int j = 0; j < W_curr[0].size(); j++) {
+				for (unsigned int k = 0; k < dZ.size(); k++) {
 					dA_prev += W_curr[i][j] * dZ[k];
 				}
 				//double(dA_prev) += inner_product(W_curr[i].begin(), W_curr[i].end(), dZ.begin(), 0.0);
@@ -245,10 +245,10 @@ public:
 		//void * dA_prev;
 		transform(weights_prev.begin(), weights_prev.end(), back_inserter(dW), [&dZ](auto& c) {return (c)*(dZ - c); });
 		Vec dW2 = dW;
-		for (auto i = 0; i < dW.size(); i++) {
+		for (unsigned int i = 0; i < dW.size(); i++) {
 			dW2.emplace_back((1 / m)*dW[i]);
 		}
-		for (auto i = 0; i < W_curr.size(); i++) {
+		for (unsigned int i = 0; i < W_curr.size(); i++) {
 			
 			transform(W_curr[i].begin(), W_curr[i].end(), back_inserter(dA_prev[i]), [&dZ](auto& c) {return (c)*(dZ - c); });
 		}
@@ -369,7 +369,7 @@ public:
 
 	bool get_accuracy_value(Vec & Y_hat, Vec & target) { // TO-DO - use sentinel value for optimisation of the comparison loop
 		if (!(compareVectors(Y_hat, target))) { throw runtime_error("vectors not of the same size!"); };
-		for (int i = 0; i < Y_hat.size(); i++) {
+		for (unsigned int i = 0; i < Y_hat.size(); i++) {
 			if (int(target[i]) != int(0)) {
 				if (int(target[i]) == int(Y_hat[i])) {
 					return true;
@@ -395,7 +395,7 @@ public:
 	pair<Vec, vector<bool>> train(Vec & training_data, Vec & target) {
 		Vec cost_history;
 		vector<bool> accuracy_history;
-		for (auto i = 0; i < this->no_iterations; i++) {
+		for (unsigned int i = 0; i < this->no_iterations; i++) {
 			container ctr{this->forward_propagation(training_data)};
 			Vec y_hat = this->convert_probs_to_class(ctr.A2);
 			double cost = this->loss_function_cross_entropy(target, y_hat);
