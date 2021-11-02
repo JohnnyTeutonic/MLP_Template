@@ -18,14 +18,14 @@ For an x64 build:
 cmake -G "Visual Studio 15 2017" -A x64 -S ../
 cmake --build .
 ```
-Alternatively, for an x86 build:
+Or for an x86 build:
 ```
 cmake -G "Visual Studio 15 2017" -A Win32 -S ../
 cmake --build .
 ```
 - this will generate an executable in build/debug/
 - the executable is a demonstration of running an MLP multi-class classification problem using synthetic data with 3 hidden layers
-- alternatively, using a command prompt equipped with MSVC 2017, run the following command from the root dir:
+- alternatively, you can simply run a script using a command prompt equipped with MSVC 2017 by running the following command from the root directory:
 ```
 build_project_windows.bat
 ```
